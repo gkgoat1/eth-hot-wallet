@@ -23,9 +23,11 @@ allowBuilds:
   secp256k1: true
   spawn-sync: true
   uglifyjs-webpack-plugin: false
-  # eth-lightwallet-next git dep: allow its prepare (npm run build) to build dist/
-  "eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/83c6e57c73d8524528100665dfeb39e5d52a7f99": true
-  eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/5e0c9fa70c3f76d46c24c453c89d90db2b36f409: set this to true or false
+  # eth-lightwallet-next git dep (published as @gkgo/eth-lightwallet): allow
+  # its prepare (npm run build) to build dist/ on install.
+  "@gkgo/eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/8e263dda7064d3576eaad700e9ea13b662ce809f": true
+  eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/83c6e57c73d8524528100665dfeb39e5d52a7f99: set this to true or false
+  '@gkgo/eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/ccef22fa5d947bc7a886eb19f702851af6b03985': set this to true or false
 minimumReleaseAgeExclude:
   - ox@0.14.54
   - viem@2.57.4

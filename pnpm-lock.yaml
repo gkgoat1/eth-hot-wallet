@@ -30,8 +30,8 @@ importers:
         specifier: ^7.0.0
         version: 7.0.3
       eth-lightwallet-next:
-        specifier: github:gkgoat1/eth-lightwallet#83c6e57c73d8524528100665dfeb39e5d52a7f99
-        version: eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/83c6e57c73d8524528100665dfeb39e5d52a7f99(typescript@5.6.3)
+        specifier: github:gkgoat1/eth-lightwallet#8e263dda7064d3576eaad700e9ea13b662ce809f
+        version: '@gkgo/eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/8e263dda7064d3576eaad700e9ea13b662ce809f(typescript@5.6.3)'
       express:
         specifier: ^4.17.1
         version: 4.22.3
@@ -775,6 +775,10 @@ packages:
   '@ethereumjs/util@10.1.3':
     resolution: {integrity: sha512-PhezOVe4DFaC+QLIsnK/tiOaXjpjS2F9AH4Ez0EfWevFw9NWNSg95l7I0dWuHF0B7v9odm2Ijqwo0EnARXtUmA==}
     engines: {node: '>=20'}
+
+  '@gkgo/eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/8e263dda7064d3576eaad700e9ea13b662ce809f':
+    resolution: {gitHosted: true, integrity: sha512-7GC6z5TVHpJ89hvMhGkvsTXA2FNvt3uuuQN1o58G5oSfW3MIkpNngmrROz/hJ0HAttCB8p9Z7BNNzD1dWMecKA==, tarball: https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/8e263dda7064d3576eaad700e9ea13b662ce809f}
+    version: 5.0.0
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -3290,10 +3294,6 @@ packages:
   etag@1.8.1:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
-
-  eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/83c6e57c73d8524528100665dfeb39e5d52a7f99:
-    resolution: {gitHosted: true, integrity: sha512-fLpr8c9S01ynC5Ly3a3QJd3BGWaFJ8Mk6unE0bqMoJVRqUyIQYQRsmY6x6YZUIV2l4xJ0Hwq/KCvTpgi9k3Quw==, tarball: https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/83c6e57c73d8524528100665dfeb39e5d52a7f99}
-    version: 5.0.0-alpha.0
 
   event-emitter@0.3.5:
     resolution: {integrity: sha512-D9rRn9y7kLPnJ+hMq7S/nhvoKwwvVJahBi2BPmx3bvbsEdK3W9ii8cBSGjP+72/LnM4n6fo3+dkCX5FeTQruXA==}
@@ -8087,6 +8087,26 @@ snapshots:
       '@noble/curves': 2.4.0
       '@noble/hashes': 2.4.0
 
+  '@gkgo/eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/8e263dda7064d3576eaad700e9ea13b662ce809f(typescript@5.6.3)':
+    dependencies:
+      '@ethereumjs/common': 10.1.3
+      '@ethereumjs/rlp': 10.1.3
+      '@ethereumjs/tx': 10.1.3
+      '@ethereumjs/util': 10.1.3
+      '@noble/curves': 2.4.0
+      '@noble/hashes': 2.4.0
+      '@scure/bip32': 2.4.0
+      '@scure/bip39': 2.4.0
+      crypto-js: 4.2.0
+      tweetnacl: 1.0.3
+      tweetnacl-util: 0.15.0
+      viem: 2.57.4(typescript@5.6.3)
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
+
   '@humanfs/core@0.19.2':
     dependencies:
       '@humanfs/types': 0.15.0
@@ -11324,26 +11344,6 @@ snapshots:
   esutils@2.0.3: {}
 
   etag@1.8.1: {}
-
-  eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/83c6e57c73d8524528100665dfeb39e5d52a7f99(typescript@5.6.3):
-    dependencies:
-      '@ethereumjs/common': 10.1.3
-      '@ethereumjs/rlp': 10.1.3
-      '@ethereumjs/tx': 10.1.3
-      '@ethereumjs/util': 10.1.3
-      '@noble/curves': 2.4.0
-      '@noble/hashes': 2.4.0
-      '@scure/bip32': 2.4.0
-      '@scure/bip39': 2.4.0
-      crypto-js: 4.2.0
-      tweetnacl: 1.0.3
-      tweetnacl-util: 0.15.0
-      viem: 2.57.4(typescript@5.6.3)
-    transitivePeerDependencies:
-      - bufferutil
-      - typescript
-      - utf-8-validate
-      - zod
 
   event-emitter@0.3.5:
     dependencies:
