@@ -1,5 +1,14 @@
 
-export const TokenSelection = {
+export interface TokenDef {
+  symbol: string;
+  name: string;
+  contractAddress: string;
+  decimals: number;
+  description: string;
+  url: string;
+}
+
+export const TokenSelection: Record<string, TokenDef[]> = {
   Offline: [],
   'Local RPC': [],
   'Ropsten Testnet': [
