@@ -50,7 +50,22 @@ const HeaderWrapped = styled.header`
   font-size: 16px;
 `;
 
-function Header(props) {
+interface HeaderProps {
+  onLoadNetwork: (name: string) => void;
+  // onCheckBalances: PropTypes.func.isRequired,
+
+  loading?: boolean;
+  error?: object | string | boolean;
+  networkName?: string;
+  availableNetworks?: object;
+  blockNumber?: number;
+
+  /* checkingBalanceDoneTime: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+  checkingBalances: PropTypes.bool,
+  checkingBalancesError: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.bool]), */
+}
+
+function Header(props: HeaderProps) {
   const {
     loading,
     error,
@@ -125,9 +140,9 @@ const mapStateToProps = createStructuredSelector({
   askFaucetError: makeSelectAskFaucetError(),
 });
 
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch: (action: { type: string }) => void) {
   return {
-    onLoadNetwork: (name) => {
+    onLoadNetwork: (name: string) => {
       // if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(loadNetwork(name));
     },

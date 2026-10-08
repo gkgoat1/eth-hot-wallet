@@ -19,6 +19,59 @@ import {
   SEND_TRANSACTION_ERROR,
 } from './constants';
 
+export interface ChangeFromAction {
+  type: typeof CHANGE_FROM;
+  address?: string | null;
+  sendTokenSymbol?: string;
+}
+
+export interface ChangeAmountAction {
+  type: typeof CHANGE_AMOUNT;
+  amount: number;
+}
+
+export interface ChangeToAction {
+  type: typeof CHANGE_TO;
+  address: string;
+}
+
+export interface ChangeGasPriceAction {
+  type: typeof CHANGE_GAS_PRICE;
+  gasPrice: number | string;
+}
+
+export interface ConfirmSendTransactionAction {
+  type: typeof COMFIRM_SEND_TRANSACTION;
+}
+
+export interface ConfirmSendTransactionSuccessAction {
+  type: typeof COMFIRM_SEND_TRANSACTION_SUCCESS;
+  msg: string;
+}
+
+export interface ConfirmSendTransactionErrorAction {
+  type: typeof COMFIRM_SEND_TRANSACTION_ERROR;
+  error: string;
+}
+
+export interface AbortTransactionAction {
+  type: typeof ABORT_TRANSACTION;
+}
+
+export interface SendTransactionAction {
+  type: typeof SEND_TRANSACTION;
+}
+
+export interface SendTransactionSuccessAction {
+  type: typeof SEND_TRANSACTION_SUCCESS;
+  tx: string;
+}
+
+export interface SendTransactionErrorAction {
+  type: typeof SEND_TRANSACTION_ERROR;
+  error: string;
+}
+
 /**
  * Update from address and token, both parameters are optional
  * @param  {string} [address] '0xffd..'
@@ -26,7 +79,7 @@ import {
  *
  * @return {object}    An action object with a type of CHANGE_FROM, address and sendTokenSymbol
  */
-export function changeFrom(address, sendTokenSymbol) {
+export function changeFrom(address?: string | null, sendTokenSymbol?: string): ChangeFromAction {
   return {
     type: CHANGE_FROM,
     address,
@@ -34,14 +87,14 @@ export function changeFrom(address, sendTokenSymbol) {
   };
 }
 
-export function changeAmount(amount) {
+export function changeAmount(amount: number): ChangeAmountAction {
   return {
     type: CHANGE_AMOUNT,
     amount,
   };
 }
 
-export function changeTo(inputAddress) {
+export function changeTo(inputAddress: string): ChangeToAction {
   // remove unnessesery spaces
   const address = inputAddress.replace(/^\s+|\s+$/g, '');
   return {
@@ -50,7 +103,7 @@ export function changeTo(inputAddress) {
   };
 }
 
-export function changeGasPrice(gasPrice) {
+export function changeGasPrice(gasPrice: number | string): ChangeGasPriceAction {
   if (gasPrice === '') {
     return {
       type: CHANGE_GAS_PRICE,
@@ -70,7 +123,7 @@ export function changeGasPrice(gasPrice) {
  *
  * @return {object}    An action object with a type of COMFIRM_SEND_TRANSACTION
  */
-export function confirmSendTransaction() {
+export function confirmSendTransaction(): ConfirmSendTransactionAction {
   return {
     type: COMFIRM_SEND_TRANSACTION,
   };
@@ -81,7 +134,7 @@ export function confirmSendTransaction() {
  *
  * @return {object}    An action object with a type of COMFIRM_SEND_TRANSACTION_SUCCESS
  */
-export function confirmSendTransactionSuccess(msg) {
+export function confirmSendTransactionSuccess(msg?: string): ConfirmSendTransactionSuccessAction {
   if (msg) {
     return {
       type: COMFIRM_SEND_TRANSACTION_SUCCESS,
@@ -100,7 +153,7 @@ export function confirmSendTransactionSuccess(msg) {
  *
  * @return {object}    An action object with a type of COMFIRM_SEND_TRANSACTION_ERROR
  */
-export function confirmSendTransactionError(error) {
+export function confirmSendTransactionError(error: string): ConfirmSendTransactionErrorAction {
   return {
     type: COMFIRM_SEND_TRANSACTION_ERROR,
     error,
@@ -112,7 +165,7 @@ export function confirmSendTransactionError(error) {
  *
  * @return {object}    An action object with a type of ABORT_TRANSACTION
  */
-export function abortTransaction() {
+export function abortTransaction(): AbortTransactionAction {
   return {
     type: ABORT_TRANSACTION,
   };
@@ -123,7 +176,7 @@ export function abortTransaction() {
  *
  * @return {object}    An action object with a type of SEND_TRANSACTION
  */
-export function sendTransaction() {
+export function sendTransaction(): SendTransactionAction {
   return {
     type: SEND_TRANSACTION,
   };
@@ -134,7 +187,7 @@ export function sendTransaction() {
  *
  * @return {object}    An action object with a type of SEND_TRANSACTION_SUCCESS
  */
-export function sendTransactionSuccess(tx) {
+export function sendTransactionSuccess(tx: string): SendTransactionSuccessAction {
   return {
     type: SEND_TRANSACTION_SUCCESS,
     tx,
@@ -146,7 +199,7 @@ export function sendTransactionSuccess(tx) {
  *
  * @return {object}    An action object with a type of SEND_TRANSACTION_ERROR
  */
-export function sendTransactionError(error) {
+export function sendTransactionError(error: string): SendTransactionErrorAction {
   return {
     type: SEND_TRANSACTION_ERROR,
     error,

@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { createWeb3Adapter } from '@eth-hot-wallet/web3-adapter';
+import type { Web3Adapter } from '@eth-hot-wallet/web3-adapter';
 import { take, call, put, select, takeLatest, race, fork } from 'redux-saga/effects';
 
 import {
@@ -71,6 +72,7 @@ import {
   askFaucetSuccess,
   askFaucetError,
 } from './actions';
+import type { LoadNetworkAction } from './actions';
 
 import {
   LOAD_NETWORK,
@@ -89,7 +91,7 @@ import Network from './network';
 // adapter. `adapter` is (re)created per network in loadNetwork; `null` in
 // offline mode. Signing routes through the lightwallet keystore's
 // passwordProvider, scoped to each send (see adapter docs).
-let adapter = null;
+let adapter: Web3Adapter | null = null;
 
 /* For development only, if online = false then most api calls will be replaced by constant values
 * affected functions:
@@ -103,7 +105,7 @@ if (!online) message.warn('Debug mode: online = false in Header/saga.js');
 /**
  * connect to rpc and attach keystore as siger provider
  */
-export function* loadNetwork(action) {
+export function* loadNetwork(action: LoadNetworkAction): Generator {
   if (!online) {
     message.warn('debug mode: online = false in Header/saga.js');
   }
@@ -157,7 +159,7 @@ export function* loadNetwork(action) {
 }
 
 
-export function* confirmSendTransaction() {
+export function* confirmSendTransaction(): Generator {
   try {
     const fromAddress = yield select(makeSelectFrom());
     const amount = yield select(makeSelectAmount());
@@ -189,7 +191,7 @@ export function* confirmSendTransaction() {
   }
 }
 
-export function* SendTransaction() {
+export function* SendTransaction(): Generator {
   const keystore = yield select(makeSelectKeystore());
   try {
     const fromAddress = yield select(makeSelectFrom());
@@ -212,7 +214,10 @@ export function* SendTransaction() {
     let tx;
     if (tokenToSend === 'eth') {
       const sendAmount = new BigNumber(amount).times(Ether);
-      tx = yield call([adapter, adapter.sendEth], {
+      // SAFETY: adapter is non-null here because a send form can only be
+      // submitted while online (loadNetwork created it); if it were null the
+      // member access throws and is caught below, as in the JS original.
+      tx = yield call([adapter, adapter!.sendEth], {
         password,
         from: fromAddress,
         to: toAddress,
@@ -228,7 +233,8 @@ export function* SendTransaction() {
       const contractAddress = tokenInfo.contractAddress;
       const tokenAmount = new BigNumber(amount).times(new BigNumber(10).pow(tokenInfo.decimals));
 
-      tx = yield call([adapter, adapter.erc20Transfer], {
+      // SAFETY: same online invariant as the sendEth branch above.
+      tx = yield call([adapter, adapter!.erc20Transfer], {
         password,
         contract: contractAddress,
         from: fromAddress,
@@ -249,17 +255,20 @@ export function* SendTransaction() {
 
 
 /* *************  Polling saga and polling flow for check balances ***************** */
-export function getEthBalancePromise(address) {
+export function getEthBalancePromise(address: string) {
   // adapter returns wei as bigint; wrap in BigNumber to match the web3 surface
-  return adapter.getBalance(address).then((b) => new BigNumber(b.toString()));
+  // SAFETY: balance checks only run while online, after loadNetwork created
+  // the adapter (polling is cancelled on offline switch).
+  return adapter!.getBalance(address).then((b) => new BigNumber(b.toString()));
 }
 
-export function getTokenBalancePromise(address, tokenContractAddress) {
-  return adapter.erc20BalanceOf(tokenContractAddress, address).then((b) => new BigNumber(b.toString()));
+export function getTokenBalancePromise(address: string, tokenContractAddress: string) {
+  // SAFETY: same online invariant as getEthBalancePromise.
+  return adapter!.erc20BalanceOf(tokenContractAddress, address).then((b) => new BigNumber(b.toString()));
 }
 
 
-function* checkTokenBalance(address, symbol) {
+function* checkTokenBalance(address: string, symbol: string): Generator {
   if (!address || !symbol) {
     return null;
   }
@@ -273,7 +282,7 @@ function* checkTokenBalance(address, symbol) {
   return true;
 }
 
-function* checkTokensBalances(address) {
+function* checkTokensBalances(address: string): Generator {
   const opt = {
     returnList: true,
     removeIndex: true,
@@ -289,7 +298,7 @@ function* checkTokensBalances(address) {
   // console.log(tokenMap);
 }
 
-export function* checkAllBalances() {
+export function* checkAllBalances(): Generator {
   try {
     let j = 0;
     const addressList = yield select(makeSelectAddressMap(false, { returnList: true }));
@@ -313,7 +322,7 @@ export function* checkAllBalances() {
 }
 
 // Utility function for delay effects
-function delay(millisec) {
+function delay(millisec: number) {
   const promise = new Promise((resolve) => {
     setTimeout(() => resolve(true), millisec);
   });
@@ -321,7 +330,7 @@ function delay(millisec) {
 }
 
 // Fetch data every X seconds
-function* pollData() {
+function* pollData(): Generator {
   try {
     // console.log('pollData');
     yield call(delay, timeBetweenCheckbalances);
@@ -336,7 +345,7 @@ function* pollData() {
 // Start Polling when first call to checkAllBalances succeded or fails
 // Wait for successful response or fail, then fire another request
 // Cancel polling on STOP_POLL_BALANCES
-function* watchPollData() {
+function* watchPollData(): Generator {
   while (true) { // eslint-disable-line
     yield take([CHECK_BALANCES_SUCCESS, CHECK_BALANCES_ERROR]);
     yield race([ // eslint-disable-line
@@ -350,7 +359,7 @@ function* watchPollData() {
 /**
  * Get exchange rates from api
  */
-export function* getRates() {
+export function* getRates(): Generator {
   // const requestURL = 'https://api.coinmarketcap.com/v1/ticker/ethereum/?convert=EUR';
   const requestURL = 'https://api.coinmarketcap.com/v1/ticker/?convert=EUR';
   try {
@@ -395,11 +404,11 @@ export function* getRates() {
 /**
  * Check if faucet ready via api
  */
-export function* checkFaucetApi() {
+export function* checkFaucetApi(): Generator {
   const requestURL = checkFaucetAddress;
   // console.log(`requestURL: ${requestURL}`);
   try {
-    const result = online ? yield call(request, requestURL) :
+    const result: any = online ? yield call(request, requestURL) : // eslint-disable-line @typescript-eslint/no-explicit-any
       { message: { serviceReady: true } };
 
     if (result.message.serviceReady) {
@@ -416,13 +425,13 @@ export function* checkFaucetApi() {
 /**
  * Check if faucet ready via api
  */
-export function* askFaucetApi() {
+export function* askFaucetApi(): Generator {
   const addressList = yield select(makeSelectAddressList());
   const askAddress = addressList.keySeq().toArray()[0];
   const requestURL = `${askFaucetAddress}?address=${askAddress}`;
   // console.log(`requestURL: ${requestURL}`);
   try {
-    const result = online ? yield call(request, requestURL) :
+    const result: any = online ? yield call(request, requestURL) : // eslint-disable-line @typescript-eslint/no-explicit-any
       { message: { tx: '0x0f71ca4a8af03e67f06910bf301308ecd701064bd2183b51e1e3ca18af9bc9f8' } };
     if (result.message.tx) {
       yield put(askFaucetSuccess(result.message.tx));
@@ -436,7 +445,7 @@ export function* askFaucetApi() {
 
 
 // Individual exports for testing
-export default function* defaultSaga() {
+export default function* defaultSaga(): Generator {
   yield takeLatest(LOAD_NETWORK, loadNetwork);
   // yield takeLatest(LOAD_NETWORK, checkFaucetApi);
   yield takeLatest(COMFIRM_SEND_TRANSACTION, confirmSendTransaction);

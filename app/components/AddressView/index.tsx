@@ -20,7 +20,37 @@ const Div = styled.div`
   min-height: 100px;
 `;
 
-function AddressView(props) {
+interface AddressViewProps {
+  generateKeystoreLoading?: boolean;
+  generateKeystoreError?: object | string | boolean;
+  isComfirmed?: boolean;
+  addressMap?: object | boolean | any[];
+  tokenDecimalsMap?: boolean | object;
+  onShowSendToken: (address: string, token: string) => void;
+  onShowTokenChooser: () => void;
+
+  onGenerateAddress: () => void;
+  addressListLoading?: boolean;
+  addressListError?: object | string | boolean;
+  addressListMsg?: string | boolean;
+
+  onCheckBalances: () => void;
+  networkReady?: boolean;
+  checkingBalanceDoneTime?: string | boolean;
+  checkingBalances?: boolean;
+  checkingBalancesError?: object | string | boolean;
+
+  exchangeRates?: object;
+  onSelectCurrency: (convertTo: string) => void;
+  convertTo?: string | boolean;
+
+  onGetExchangeRates: () => void;
+  getExchangeRatesDoneTime?: string | boolean;
+  getExchangeRatesLoading?: boolean;
+  getExchangeRatesError?: object | string | boolean;
+}
+
+function AddressView(props: AddressViewProps) {
   const {
     generateKeystoreLoading, generateKeystoreError,
     isComfirmed,
@@ -100,7 +130,7 @@ function AddressView(props) {
   );
 }
 
-AddressView.propTypes = {
+(AddressView as any).propTypes = {
   generateKeystoreLoading: PropTypes.bool,
   generateKeystoreError: PropTypes.oneOfType([
     PropTypes.object,

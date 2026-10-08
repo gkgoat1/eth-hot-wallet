@@ -12,8 +12,15 @@ import PropTypes from 'prop-types';
 import { Ether } from 'utils/constants';
 // import messages from './messages';
 
+interface AddressItemProps {
+  address?: string;
+  data?: any; // immutable Map of token -> data
+  onChangeFrom: (address: string) => void;
+  exchangeRates?: any; // immutable Map
+  convertTo?: string | boolean;
+}
 
-function AddressItem(props) {
+function AddressItem(props: AddressItemProps) {
   const { address, data, onChangeFrom, exchangeRates, convertTo } = props;
   const ethData = data.get('eth');
 
@@ -35,7 +42,7 @@ function AddressItem(props) {
   );
 }
 
-AddressItem.propTypes = {
+(AddressItem as any).propTypes = {
   address: PropTypes.string,
   data: PropTypes.object,
   onChangeFrom: PropTypes.func,

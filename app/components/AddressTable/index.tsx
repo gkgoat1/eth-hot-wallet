@@ -17,6 +17,35 @@ const { Column } = Table;
 // import { FormattedMessage } from 'react-intl';
 // import messages from './messages';
 
+// plain JS object: number of decimals per token symbol
+interface TokenDecimalsMap {
+  [token: string]: number;
+}
+
+// plain JS object: per-token data ({ balance: BigNumber | false }) plus a numeric 'index' key
+interface TokenMap {
+  [token: string]: any;
+}
+
+// plain JS object: address -> TokenMap
+interface AddressMap {
+  [address: string]: TokenMap;
+}
+
+// plain JS object: exchange rates keyed by pair name (ie 'eth_usd')
+interface ExchangeRates {
+  [pair: string]: any;
+}
+
+interface AddressRow {
+  index: number;
+  key: number;
+  token: string;
+  address: string;
+  balance: string;
+  convert?: string;
+}
+
 const AddrTable = styled(Table)`
   max-width: 860px;
   margin-left: auto;
@@ -51,14 +80,14 @@ const AddrTable = styled(Table)`
   balance: '3',
   convert: '',
 } */
-const splitAddrToRows = (tokenDecimalsMap, tokenMapIN, address, startKey) => {
+const splitAddrToRows = (tokenDecimalsMap: TokenDecimalsMap, tokenMapIN: TokenMap, address: string, startKey: number): AddressRow[] => {
   let key = startKey;
   const tokenMap = tokenMapIN;
   const index = tokenMap.index;
   delete tokenMap.index;
 
   return Object.keys(tokenMap).map((token) => {
-    const sameAddressRow = {};
+    const sameAddressRow = {} as AddressRow;
     sameAddressRow.index = index;
     sameAddressRow.key = key;
     key += 1;
@@ -101,7 +130,7 @@ const splitAddrToRows = (tokenDecimalsMap, tokenMapIN, address, startKey) => {
     convert: '13 USD',
   },
 ] */
-const transformList = (addressMap, tokenDecimalsMap, showTokens) => { //eslint-disable-line
+const transformList = (addressMap: AddressMap, tokenDecimalsMap: TokenDecimalsMap, showTokens: boolean): AddressRow[] => { //eslint-disable-line
   // const showTokens = true;
   let iKey = 1;
   const list = Object.keys(addressMap).map((address) => {
@@ -111,7 +140,7 @@ const transformList = (addressMap, tokenDecimalsMap, showTokens) => { //eslint-d
     iKey += sameAddressList.length;
     return sameAddressList;
   });
-  return [].concat(...list); // flaten array
+  return ([] as AddressRow[]).concat(...list); // flaten array
 };
 
 /**
@@ -122,7 +151,7 @@ const transformList = (addressMap, tokenDecimalsMap, showTokens) => { //eslint-d
  *
  * @return {Array} array as data for table, see example above
  */
-const getConvertRate = (exchangeRates, from, to) => {
+const getConvertRate = (exchangeRates: ExchangeRates, from: string, to: string) => {
   const fromKey = `eth_${from}`;
   // convert token to eth by invert(eth_token)
   const toEthRate = exchangeRates[fromKey].rate.toPower(-1);
@@ -139,7 +168,7 @@ const getConvertRate = (exchangeRates, from, to) => {
  *
  * @return {Array} array as data for table, see example above
  */
-const addConvertRates = (rowList, exchangeRates, convertTo) =>
+const addConvertRates = (rowList: AddressRow[], exchangeRates: ExchangeRates, convertTo: string): AddressRow[] =>
   rowList.map((row) => {
     try {
       // const convertToSymbol = convertTo.slice(4).toUpperCase();
@@ -156,7 +185,16 @@ const addConvertRates = (rowList, exchangeRates, convertTo) =>
     }
   });
 
-function AddressTable(props) {
+interface AddressTableProps {
+  addressMap?: AddressMap | boolean;
+  tokenDecimalsMap?: TokenDecimalsMap | boolean;
+  onShowSendToken: (address: string, token: string) => void;
+  exchangeRates?: ExchangeRates;
+  onSelectCurrency: (convertTo: string) => void;
+  convertTo?: string | boolean;
+}
+
+function AddressTable(props: AddressTableProps) {
   const {
     addressMap,
     tokenDecimalsMap,
@@ -168,8 +206,10 @@ function AddressTable(props) {
 
   const currencyDropdownProps = { exchangeRates, onSelectCurrency, convertTo };
 
-  const rowList = transformList(addressMap, tokenDecimalsMap, true);
-  const completeRowList = addConvertRates(rowList, exchangeRates, convertTo);
+  // SAFETY: callers only render AddressTable once an address list exists,
+  // so addressMap / tokenDecimalsMap / exchangeRates / convertTo are their object forms here (never false)
+  const rowList = transformList(addressMap as AddressMap, tokenDecimalsMap as TokenDecimalsMap, true);
+  const completeRowList = addConvertRates(rowList, exchangeRates as ExchangeRates, convertTo as string);
 
   return (
     <AddrTable
@@ -196,14 +236,16 @@ function AddressTable(props) {
         render={(text, record) => {
           const obj = {
             children: text,
-            props: {},
+            props: {} as { rowSpan?: number },
           };
           if (record.token !== 'eth') {
             // obj.props.rowSpan = 0;
             obj.props.rowSpan = 0;
             // obj.children = '~';
           } else {
-            obj.props.rowSpan = Object.keys(tokenDecimalsMap).length || 2;
+            // SAFETY: callers only render AddressTable once an address list exists,
+            // so tokenDecimalsMap is its object form here (never false)
+            obj.props.rowSpan = Object.keys(tokenDecimalsMap as TokenDecimalsMap).length || 2;
           }
           return obj;
         }}
@@ -272,7 +314,7 @@ function AddressTable(props) {
   );
 }
 
-AddressTable.propTypes = {
+(AddressTable as any).propTypes = {
   addressMap: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
   tokenDecimalsMap: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
   onShowSendToken: PropTypes.func,

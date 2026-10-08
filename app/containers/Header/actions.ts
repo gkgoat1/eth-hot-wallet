@@ -32,12 +32,86 @@ import {
 
 import { store } from '../../app';
 
+export interface LoadNetworkAction {
+  type: typeof LOAD_NETWORK;
+  networkName: string;
+}
+
+export interface LoadNetworkSuccessAction {
+  type: typeof LOAD_NETWORK_SUCCESS;
+  blockNumber: number | bigint;
+}
+
+export interface LoadNetworkErrorAction {
+  type: typeof LOAD_NETWORK_ERROR;
+  error: string;
+}
+
+export interface CheckBalancesAction {
+  type: typeof CHECK_BALANCES;
+}
+
+export interface CheckBalancesSuccessAction {
+  type: typeof CHECK_BALANCES_SUCCESS;
+  timeString: string;
+}
+
+export interface CheckBalancesErrorAction {
+  type: typeof CHECK_BALANCES_ERROR;
+  error: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
+export interface StopPollBalancesAction {
+  type: typeof STOP_POLL_BALANCES;
+}
+
+export interface GetExchangeRatesAction {
+  type: typeof GET_EXCHANGE_RATES;
+}
+
+export interface GetExchangeRatesSuccessAction {
+  type: typeof GET_EXCHANGE_RATES_SUCCESS;
+  timeString: string;
+}
+
+export interface GetExchangeRatesErrorAction {
+  type: typeof GET_EXCHANGE_RATES_ERROR;
+  error: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
+export interface CheckFaucetAction {
+  type: typeof CHECK_FAUCET;
+}
+
+export interface CheckFaucetSuccessAction {
+  type: typeof CHECK_FAUCET_SUCCESS;
+}
+
+export interface CheckFaucetErrorAction {
+  type: typeof CHECK_FAUCET_ERROR;
+  error: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
+export interface AskFaucetAction {
+  type: typeof ASK_FAUCET;
+}
+
+export interface AskFaucetSuccessAction {
+  type: typeof ASK_FAUCET_SUCCESS;
+  tx: string;
+}
+
+export interface AskFaucetErrorAction {
+  type: typeof ASK_FAUCET_ERROR;
+  error: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
 /**
  * Connect to eth network using address from network.js file
  *
  * @return {object}    An action object with a type of LOAD_NETWORK
  */
-export function loadNetwork(networkName) {
+export function loadNetwork(networkName: string): LoadNetworkAction {
   return {
     type: LOAD_NETWORK,
     networkName,
@@ -51,7 +125,7 @@ export function loadNetwork(networkName) {
  *
  * @return {object}      An action object with a type of LOAD_NETWORK_SUCCESS passing the repos
  */
-export function loadNetworkSuccess(blockNumber) {
+export function loadNetworkSuccess(blockNumber: number | bigint): LoadNetworkSuccessAction {
   message.success(`Connected sucessfully, current block: ${blockNumber}`);
   return {
     type: LOAD_NETWORK_SUCCESS,
@@ -66,7 +140,7 @@ export function loadNetworkSuccess(blockNumber) {
  *
  * @return {object} An action object with a type of LOAD_NETWORK_ERROR passing the error
  */
-export function loadNetworkError(error) {
+export function loadNetworkError(error: string): LoadNetworkErrorAction {
   if (error !== offlineModeString) {
     const err = error.indexOf('Invalid JSON RPC response from host provider') >= 0 ?
       `${error}, Check Internet connection and connectivity to RPC` : error;
@@ -85,7 +159,7 @@ export function loadNetworkError(error) {
  *
  * @return {object}    An action object with a type of CHECK_BALANCES
  */
-export function checkBalances() {
+export function checkBalances(): CheckBalancesAction {
   return {
     type: CHECK_BALANCES,
   };
@@ -96,7 +170,7 @@ export function checkBalances() {
  *
  * @return {object}      An action object with a type of CHECK_BALANCES_SUCCESS
  */
-export function checkBalancesSuccess() {
+export function checkBalancesSuccess(): CheckBalancesSuccessAction {
   const timeString = new Date().toLocaleTimeString();
   // message.success('Balances updated succesfully');
   return {
@@ -112,7 +186,7 @@ export function checkBalancesSuccess() {
  *
  * @return {object} An action object with a type of CHECK_BALANCES_ERROR passing the error
  */
-export function CheckBalancesError(error) {
+export function CheckBalancesError(error: any): CheckBalancesErrorAction { // eslint-disable-line @typescript-eslint/no-explicit-any
   message.error(error);
   return {
     type: CHECK_BALANCES_ERROR,
@@ -126,7 +200,7 @@ export function CheckBalancesError(error) {
  *
  * @return {object} An action object with a type of STOP_POLL_BALANCES
  */
-export function stopPollingBalances() {
+export function stopPollingBalances(): StopPollBalancesAction {
   return {
     type: STOP_POLL_BALANCES,
   };
@@ -138,7 +212,7 @@ export function stopPollingBalances() {
  *
  * @return {object}    An action object with a type of CHECK_BALANCES
  */
-export function getExchangeRates() {
+export function getExchangeRates(): GetExchangeRatesAction {
   return {
     type: GET_EXCHANGE_RATES,
   };
@@ -149,7 +223,7 @@ export function getExchangeRates() {
  *
  * @return {object}      An action object with a type of GET_EXCHANGE_RATES_SUCCESS
  */
-export function getExchangeRatesSuccess() {
+export function getExchangeRatesSuccess(): GetExchangeRatesSuccessAction {
   const timeString = new Date().toLocaleTimeString();
   message.success('Exchange rates updated succesfully');
   return {
@@ -165,7 +239,7 @@ export function getExchangeRatesSuccess() {
  *
  * @return {object} An action object with a type of CHECK_BALANCES_ERROR passing the error
  */
-export function getExchangeRatesError(error) {
+export function getExchangeRatesError(error: any): GetExchangeRatesErrorAction { // eslint-disable-line @typescript-eslint/no-explicit-any
   message.error(error);
   return {
     type: GET_EXCHANGE_RATES_ERROR,
@@ -181,7 +255,7 @@ export function getExchangeRatesError(error) {
  *
  * @return {object}    An action object with a type of CHECK_FAUCET
  */
-export function checkFaucet() {
+export function checkFaucet(): CheckFaucetAction {
   return {
     type: CHECK_FAUCET,
   };
@@ -192,7 +266,7 @@ export function checkFaucet() {
  *
  * @return {object}      An action object with a type of CHECK_FAUCET_SUCCESS
  */
-export function checkFaucetSuccess() {
+export function checkFaucetSuccess(): CheckFaucetSuccessAction {
   //  message.success('Exchange rates updated succesfully');
   const key = `open${Date.now()}`;
   const closeNotification = () => {
@@ -243,7 +317,7 @@ export function checkFaucetSuccess() {
  *
  * @return {object} An action object with a type of CHECK_FAUCET_ERROR passing the error
  */
-export function checkFaucetError(error) {
+export function checkFaucetError(error: any): CheckFaucetErrorAction { // eslint-disable-line @typescript-eslint/no-explicit-any
   return {
     type: CHECK_FAUCET_ERROR,
     error,
@@ -255,7 +329,7 @@ export function checkFaucetError(error) {
  *
  * @return {object}    An action object with a type of ASK_FAUCET
  */
-export function askFaucet() {
+export function askFaucet(): AskFaucetAction {
   const icon = React.createElement(Icon, { type: 'loading' });
   notification.info({
     message: 'Sending request',
@@ -274,7 +348,7 @@ export function askFaucet() {
  *
  * @return {object}      An action object with a type of ASK_FAUCET_SUCCESS
  */
-export function askFaucetSuccess(tx) {
+export function askFaucetSuccess(tx: string): AskFaucetSuccessAction {
   notification.close('ask');
   const key = `open${Date.now()}`;
   const closeNotification = () => {
@@ -303,7 +377,7 @@ export function askFaucetSuccess(tx) {
  *
  * @return {object} An action object with a type of ASK_FAUCET_ERROR passing the error
  */
-export function askFaucetError(error) {
+export function askFaucetError(error: any): AskFaucetErrorAction { // eslint-disable-line @typescript-eslint/no-explicit-any
   const key = `open${Date.now()}`;
   const closeNotification = () => {
     notification.close(key);

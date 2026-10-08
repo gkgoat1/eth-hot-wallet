@@ -11,7 +11,14 @@ import AddressItem from 'components/AddressItem';
 // import { FormattedMessage } from 'react-intl';
 // import messages from './messages';
 
-function AddressList({ addressList, onChangeFrom, exchangeRates, convertTo }) {
+interface AddressListProps {
+  addressList?: any; // immutable Map of address -> data, or false
+  onChangeFrom: (address: string) => void;
+  exchangeRates?: any; // immutable Map
+  convertTo?: string | boolean;
+}
+
+function AddressList({ addressList, onChangeFrom, exchangeRates, convertTo }: AddressListProps) {
   let mainList = null;
   // console.log(addressList.toJS().map(([address, data]) => (data)));
   // const listObject = addressList.toJS();
@@ -37,7 +44,7 @@ function AddressList({ addressList, onChangeFrom, exchangeRates, convertTo }) {
   );
 }
 
-AddressList.propTypes = {
+(AddressList as any).propTypes = {
   addressList: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
   onChangeFrom: PropTypes.func,
   exchangeRates: PropTypes.object,

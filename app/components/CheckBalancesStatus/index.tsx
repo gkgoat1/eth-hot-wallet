@@ -8,7 +8,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 // import styled from 'styled-components';
 
-function CheckBalancesStatus({ checkingBalanceDoneTime, checkingBalances, checkingBalancesError }) {
+interface CheckBalancesStatusProps {
+  checkingBalanceDoneTime?: string | boolean;
+  checkingBalances?: boolean;
+  checkingBalancesError?: object | string | boolean;
+}
+
+function CheckBalancesStatus({ checkingBalanceDoneTime, checkingBalances, checkingBalancesError }: CheckBalancesStatusProps) {
   // console.log(checkingBalancesError);
   if (checkingBalances) {
     return <div> checkingBalances ....</div>;
@@ -26,7 +32,7 @@ function CheckBalancesStatus({ checkingBalanceDoneTime, checkingBalances, checki
   );
 }
 
-CheckBalancesStatus.propTypes = {
+(CheckBalancesStatus as any).propTypes = {
   checkingBalanceDoneTime: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.bool,

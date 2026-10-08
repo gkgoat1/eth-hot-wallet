@@ -4,7 +4,14 @@
 
 import { createSelector } from 'reselect';
 
-const selectHome = (state) => state.get('home');
+// The redux state tree is an Immutable.Map; home state values are dynamic
+// (fromJS), so getters stay loosely typed.
+type ImmutableState = {
+  get: (key: string) => any;
+  getIn: (path: string[]) => any;
+};
+
+const selectHome = (state: { get: (key: string) => ImmutableState }) => state.get('home');
 
 
 const makeSelectIsShowGenerateWallet = () => createSelector(
@@ -110,7 +117,13 @@ const makeSelectAddressList = () => createSelector(
  *
  * @return {object} An object which holds the tokens and balances or array
  */
-const makeSelectAddressMap = (address, options = {}) => createSelector(
+interface AddressMapOptions {
+  returnList?: boolean;
+  removeIndex?: boolean;
+  removeEth?: boolean;
+}
+
+const makeSelectAddressMap = (address?: string | false, options: AddressMapOptions = {}) => createSelector(
   selectHome,
   (homeState) => {
     const { returnList, removeIndex, removeEth } = options;
@@ -168,7 +181,7 @@ const makeSelectConvertTo = () => createSelector(
  *
  * @return {object} An object which holds the tokensInfo for given symbol
  */
-const makeSelectTokenInfo = (symbol) => createSelector(
+const makeSelectTokenInfo = (symbol?: string) => createSelector(
   selectHome,
   (homeState) => {
     const tokenInfo = symbol ? homeState.getIn(['tokenInfo', symbol]) : homeState.get('tokenInfo');

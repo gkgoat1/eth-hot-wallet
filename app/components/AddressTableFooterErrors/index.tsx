@@ -20,7 +20,13 @@ const PaddedAlert = styled(Alert)`
 // import { FormattedMessage } from 'react-intl';
 // import messages from './messages';
 
-function AddressTableFooterErrors(props) {
+interface AddressTableFooterErrorsProps {
+  checkingBalancesError?: object | string | boolean;
+  addressListError?: object | string | boolean;
+  getExchangeRatesError?: object | string | boolean;
+}
+
+function AddressTableFooterErrors(props: AddressTableFooterErrorsProps) {
   const { checkingBalancesError, addressListError, getExchangeRatesError } = props;
   return (
     <Div>
@@ -31,7 +37,7 @@ function AddressTableFooterErrors(props) {
   );
 }
 
-AddressTableFooterErrors.propTypes = {
+(AddressTableFooterErrors as any).propTypes = {
   checkingBalancesError: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.bool]),
   addressListError: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.bool]),
   getExchangeRatesError: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.bool]),

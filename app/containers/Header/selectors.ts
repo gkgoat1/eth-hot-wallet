@@ -1,9 +1,11 @@
 import { createSelector } from 'reselect';
 import Network from './network';
+
+type ImmutableState = { get: (k: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 /**
  * Direct selector to the header state domain
  */
-const selectHeaderDomain = (state) => state.get('header');
+const selectHeaderDomain = (state: ImmutableState) => state.get('header');
 
 const makeSelectLoading = () => createSelector(
   selectHeaderDomain,

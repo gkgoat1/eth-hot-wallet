@@ -49,7 +49,15 @@ const initialState = fromJS({
   usedFaucet: false, // to prevent offer more then once
 });
 
-function headerReducer(state = initialState, action) {
+interface HeaderAction {
+  type: string;
+  networkName?: string;
+  blockNumber?: number | bigint;
+  error?: unknown;
+  timeString?: string;
+}
+
+function headerReducer(state = initialState, action: HeaderAction) {
   switch (action.type) {
     case LOAD_NETWORK:
       return state

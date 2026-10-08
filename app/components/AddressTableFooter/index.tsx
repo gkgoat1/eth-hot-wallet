@@ -19,7 +19,25 @@ const Div = styled.div`
 `;
 
 
-function AddressTableFooter(props) {
+interface AddressTableFooterProps {
+  checkingBalancesError?: object | string | boolean;
+  checkingBalances?: boolean;
+  onCheckBalances: () => void;
+  networkReady?: boolean;
+
+  isComfirmed?: boolean;
+  onGenerateAddress: () => void;
+  addressListLoading?: boolean;
+  addressListError?: object | string | boolean;
+
+  onGetExchangeRates: () => void;
+  getExchangeRatesLoading?: boolean;
+  getExchangeRatesError?: object | string | boolean;
+
+  onShowTokenChooser: () => void;
+}
+
+function AddressTableFooter(props: AddressTableFooterProps) {
   const {
     checkingBalancesError,
     checkingBalances,
@@ -80,7 +98,7 @@ function AddressTableFooter(props) {
   );
 }
 
-AddressTableFooter.propTypes = {
+(AddressTableFooter as any).propTypes = {
   onCheckBalances: PropTypes.func,
   networkReady: PropTypes.bool,
   checkingBalances: PropTypes.bool,

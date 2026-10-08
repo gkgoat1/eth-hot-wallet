@@ -64,6 +64,27 @@ import {
 } from './actions';
 
 /**
+ * Loose structural type for the lightwallet keystore. Only the methods this
+ * saga uses are declared, as any-returning; we intentionally do not couple to
+ * the eth-lightwallet-next package's own types here.
+ */
+interface Keystore {
+  passwordProvider: (callback: (err: unknown, password?: string | null) => void) => void;
+  keyFromPassword: (password: string, callback: (err: unknown, pwDerivedKey?: Uint8Array) => void) => void;
+  generateNewAddress: (pwDerivedKey: Uint8Array, n?: number) => void;
+  getAddresses: () => string[];
+  isDerivedKeyCorrect: (pwDerivedKey: Uint8Array) => boolean;
+  serialize: () => string;
+}
+
+/** Dump persisted to localStorage under localStorageKey */
+interface WalletDump {
+  ver: string;
+  saved: string;
+  ks: string;
+}
+
+/**
  * Create new seed and password
  */
 export function* generateWallet() {
@@ -75,7 +96,7 @@ export function* generateWallet() {
     yield call(timer, 500);
 
     yield put(generateWalletSucces(seed, password));
-  } catch (err) {
+  } catch (err: any) {
     yield put(generateWalletError(err));
   }
 }
@@ -105,18 +126,25 @@ export function* restoreFromSeed() {
 
     yield put(restoreWalletFromSeedSuccess(userSeed, userPassword));
     yield put(generateKeystore());
-  } catch (err) {
+  } catch (err: any) {
     yield put(restoreWalletFromSeedError(err));
   }
 }
 
 /* keyStore.createVault({password: password,
     seedPhrase: '(opt)seed',entropy: '(opt)additional entropy',salt: '(opt)'}, function (err, ks) {}); */
-function createVaultPromise(param) {
+interface CreateVaultParam {
+  password: string;
+  seedPhrase: string;
+  hdPathString: string;
+}
+
+function createVaultPromise(param: CreateVaultParam): Promise<Keystore> {
   return new Promise((resolve, reject) => {
     lightwallet.keystore.createVault(param, (err, data) => {
       if (err !== null) return reject(err);
-      return resolve(data);
+      // SAFETY: createVault invokes its callback with a keystore instance on success.
+      return resolve(data as unknown as Keystore);
     });
   });
 }
@@ -137,16 +165,17 @@ export function* genKeystore() {
     yield call(timer, 300);
 
 
-    function keyFromPasswordPromise(param) { // eslint-disable-line no-inner-declarations
+    function keyFromPasswordPromise(param: string): Promise<Uint8Array> { // eslint-disable-line no-inner-declarations
       return new Promise((resolve, reject) => {
         ks.keyFromPassword(param, (err, data) => {
           if (err !== null) return reject(err);
-          return resolve(data);
+          // SAFETY: keyFromPassword yields the derived key when err is null.
+          return resolve(data as Uint8Array);
         });
       });
     }
 
-    const ks = yield call(createVaultPromise, opt);
+    const ks: Keystore = yield call(createVaultPromise, opt);
 
     ks.passwordProvider = (callback) => {
       // const password = yield select(makeSelectPassword());
@@ -175,7 +204,7 @@ export function* genKeystore() {
  */
 export function* generateAddress() {
   try {
-    const ks = yield select(makeSelectKeystore());
+    const ks: Keystore = yield select(makeSelectKeystore());
     if (!ks) {
       throw new Error('No keystore found');
     }
@@ -186,11 +215,12 @@ export function* generateAddress() {
       throw new Error('Wallet Locked');
     }
 
-    function keyFromPasswordPromise(param) { // eslint-disable-line no-inner-declarations
+    function keyFromPasswordPromise(param: string): Promise<Uint8Array> { // eslint-disable-line no-inner-declarations
       return new Promise((resolve, reject) => {
         ks.keyFromPassword(param, (err, data) => {
           if (err !== null) return reject(err);
-          return resolve(data);
+          // SAFETY: keyFromPassword yields the derived key when err is null.
+          return resolve(data as Uint8Array);
         });
       });
     }
@@ -211,7 +241,7 @@ export function* generateAddress() {
       const balance = yield call(getEthBalancePromise, newAddress);
       yield put(changeBalance(newAddress, 'eth', balance));
     } catch (err) { }  // eslint-disable-line 
-  } catch (err) {
+  } catch (err: any) {
     yield call(timer, 1000); // eye candy
     yield put(generateAddressError(err.message));
   }
@@ -227,27 +257,29 @@ export function* unlockWallet() {
       throw Error('Wallet Already unlocked');
     }
 
-    const ks = yield select(makeSelectKeystore());
+    const ks: Keystore = yield select(makeSelectKeystore());
     if (!ks) {
       throw new Error('No keystore to unlock');
     }
 
     const passwordProvider = ks.passwordProvider;
 
-    function passwordProviderPromise() { // eslint-disable-line no-inner-declarations
+    function passwordProviderPromise(): Promise<string> { // eslint-disable-line no-inner-declarations
       return new Promise((resolve, reject) => {
         passwordProvider((err, data) => {
           if (err !== null) return reject(err);
-          return resolve(data);
+          // SAFETY: the password provider yields the entered password when err is null.
+          return resolve(data as string);
         });
       });
     }
 
-    function keyFromPasswordPromise(param) { // eslint-disable-line no-inner-declarations
+    function keyFromPasswordPromise(param: string): Promise<Uint8Array> { // eslint-disable-line no-inner-declarations
       return new Promise((resolve, reject) => {
         ks.keyFromPassword(param, (err, data) => {
           if (err !== null) return reject(err);
-          return resolve(data);
+          // SAFETY: keyFromPassword yields the derived key when err is null.
+          return resolve(data as Uint8Array);
         });
       });
     }
@@ -267,7 +299,7 @@ export function* unlockWallet() {
     }
 
     yield put(unlockWalletSuccess(userPassword));
-  } catch (err) {
+  } catch (err: any) {
     const errorString = `Unlock wallet error - ${err.message}`;
     yield put(unlockWalletError(errorString));
   }
@@ -276,7 +308,7 @@ export function* unlockWallet() {
 /**
  * change source address and token when opening send modal
  */
-export function* changeSourceAddress(action) {
+export function* changeSourceAddress(action: { type: string; address?: string; sendTokenSymbol?: string }) {
   // wait for container to load and then change from address
   if (action.address) {
     yield put(changeFrom(action.address, action.sendTokenSymbol));
@@ -296,12 +328,12 @@ export function* closeWallet() {
  */
 export function* saveWalletS() {
   try {
-    const ks = yield select(makeSelectKeystore());
+    const ks: Keystore = yield select(makeSelectKeystore());
     if (!ks) {
       throw new Error('No keystore defined');
     }
 
-    const dump = {
+    const dump: WalletDump = {
       ver: '1',
       saved: new Date().toISOString(),
       ks: ks.serialize(),
@@ -311,7 +343,7 @@ export function* saveWalletS() {
     localStore.set(localStorageKey, dump);
 
     yield put(saveWalletSuccess());
-  } catch (err) {
+  } catch (err: any) {
     const errorString = `${err.message}`;
     yield put(saveWalletError(errorString));
   }
@@ -328,20 +360,20 @@ export function* loadWalletS() {
       throw new Error('Existing keystore present  - aborting load form localStorage');
     }
 
-    const dump = localStore.get(localStorageKey);
+    const dump = localStore.get(localStorageKey) as WalletDump | undefined;
     if (!dump) {
       throw new Error('No keystore found in localStorage');
     }
     // console.log(`Load len: ${JSON.stringify(dump).length}`);
 
     const ksDump = dump.ks;
-    const ks = lightwallet.keystore.deserialize(ksDump);
+    const ks: Keystore = lightwallet.keystore.deserialize(ksDump);
 
     const tokenList = yield select(makeSelectTokenInfoList());
     yield put(generateKeystoreSuccess(ks, tokenList));
     yield put(loadNetwork(defaultNetwork));
     yield put(loadWalletSuccess());
-  } catch (err) {
+  } catch (err: any) {
     const errorString = `${err.message}`;
     yield put(loadWalletError(errorString));
   }
@@ -359,7 +391,7 @@ export function* deleteWallet() {
  * @param {object} action dispatched by tokenChooser
  * @param {object} action.tokenInfo
  */
-export function* chosenTokenInfo(action) {
+export function* chosenTokenInfo(action: { type: string; tokenInfo: { [symbol: string]: import('./actions').TokenInfoEntry } }) {
   const addressList = (yield select(makeSelectKeystore())).getAddresses();
   yield put(updateTokenInfo(addressList, action.tokenInfo));
 }

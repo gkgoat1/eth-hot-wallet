@@ -135,7 +135,14 @@ const initialState = fromJS({
   },
 });
 
-function homeReducer(state = initialState, action) {
+// Actions handled here carry heterogeneous payloads (seed, keystore, addressMap,
+// error, ...); the reducer only reads them via action.* so a loose shape is fine.
+interface HomeAction {
+  type: string;
+  [key: string]: unknown;
+}
+
+function homeReducer(state = initialState, action: HomeAction) {
   switch (action.type) {
 
     case GENERATE_WALLET:

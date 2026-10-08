@@ -98,9 +98,85 @@ import {
 } from './selectors';
 
 
-export class HomePage extends React.PureComponent { // eslint-disable-line react/prefer-stateless-function
+// Loose DOM event type for the dispatched handlers below; they only touch
+// preventDefault and (for input handlers) target.value.
+interface HandlerEvent {
+  preventDefault?: () => void;
+  target?: { value: string };
+}
+
+interface HomePageProps {
+  onGenerateWallet?: (evt?: HandlerEvent) => void;
+  onGenerateWalletCancel?: (evt?: HandlerEvent) => void;
+  isShowGenerateWallet?: boolean;
+  generateWalletLoading?: boolean;
+  generateWalletError?: object | string | boolean;
+  seed?: string | boolean;
+  password?: string | boolean;
+
+  generateKeystoreLoading?: boolean;
+  generateKeystoreError?: object | string | boolean;
+
+  onGenerateKeystore?: (evt?: HandlerEvent) => void;
+  onGenerateAddress?: (evt?: HandlerEvent) => void;
+  onShowRestoreWallet?: (evt?: HandlerEvent) => void;
+
+  isShowRestoreWallet?: boolean;
+  userSeed?: string;
+  userPassword?: string;
+  onChangeUserSeed?: (evt: HandlerEvent) => void;
+  onChangeUserPassword?: (evt: HandlerEvent) => void;
+  restoreWalletError?: object | string | boolean;
+  onRestoreWalletFromSeed?: (evt?: HandlerEvent) => void;
+  onRestoreWalletCancel?: (evt?: HandlerEvent) => void;
+
+  onCheckBalances?: (evt?: HandlerEvent) => void;
+
+  onLockWallet?: (evt?: HandlerEvent) => void;
+  onUnlockWallet?: (evt?: HandlerEvent) => void;
+
+  isComfirmed?: boolean;
+  addressMap?: boolean | object;
+  tokenDecimalsMap?: boolean | object;
+
+  isShowSendToken?: boolean;
+  onShowSendToken?: (address: string, tokenSymbol?: string) => void;
+  onHideSendToken?: () => void;
+
+  isShowTokenChooser?: boolean;
+  onShowTokenChooser?: () => void;
+  onHideTokenChooser?: () => void;
+
+  addressListLoading?: boolean;
+  addressListError?: object | string | boolean;
+  addressListMsg?: string | boolean;
+
+  networkReady?: boolean;
+  checkingBalanceDoneTime?: string | boolean;
+  checkingBalances?: boolean;
+  checkingBalancesError?: object | string | boolean;
+
+  exchangeRates?: object;
+  onSelectCurrency?: (convertTo: string) => void;
+  convertTo?: string | boolean;
+  onGetExchangeRates?: () => void;
+  getExchangeRatesDoneTime?: string | boolean;
+  getExchangeRatesLoading?: boolean;
+  getExchangeRatesError?: object | string | boolean;
+  onCloseWallet?: () => void;
+
+  onSaveWallet?: () => void;
+  saveWalletLoading?: boolean;
+  saveWalletError?: object | string | boolean;
+  onLoadWallet?: () => void;
+  loadWalletLoading?: boolean;
+  loadWalletError?: object | string | boolean;
+}
+
+export class HomePage extends React.PureComponent<HomePageProps> { // eslint-disable-line react/prefer-stateless-function
   componentDidMount() {
-    this.props.onLoadWallet();
+    // SAFETY: onLoadWallet is always provided by mapDispatchToProps below.
+    (this.props.onLoadWallet as () => void)();
   }
 
   render() {
@@ -354,55 +430,57 @@ HomePage.propTypes = {
   loadWalletError: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.bool]),
 };
 
-export function mapDispatchToProps(dispatch) {
+export function mapDispatchToProps(dispatch: (action: { type: string }) => void) {
   return {
-    onGenerateWallet: (evt) => {
+    onGenerateWallet: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(generateWallet());
     },
-    onGenerateWalletCancel: (evt) => {
+    onGenerateWalletCancel: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(generateWalletCancel());
     },
-    onGenerateKeystore: (evt) => {
+    onGenerateKeystore: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(generateKeystore());
     },
-    onGenerateAddress: (evt) => {
+    onGenerateAddress: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(generateAddress());
     },
-    onLoadNetwork: (evt) => {
+    onLoadNetwork: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(loadNetwork('local'));
     },
-    onShowRestoreWallet: (evt) => {
+    onShowRestoreWallet: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(showRestoreWallet());
     },
-    onRestoreWalletCancel: (evt) => {
+    onRestoreWalletCancel: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(restoreWalletCancel());
     },
-    onChangeUserSeed: (evt) => {
+    onChangeUserSeed: (evt: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       // console.log(evt.target);
-      dispatch(changeUserSeed(evt.target.value));
+      // SAFETY: input change events always carry a target with a value.
+      dispatch(changeUserSeed((evt.target as { value: string }).value));
     },
-    onChangeUserPassword: (evt) => {
+    onChangeUserPassword: (evt: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       // console.log(evt.target);
-      dispatch(changeUserPassword(evt.target.value));
+      // SAFETY: input change events always carry a target with a value.
+      dispatch(changeUserPassword((evt.target as { value: string }).value));
     },
-    onRestoreWalletFromSeed: (evt) => {
+    onRestoreWalletFromSeed: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(restoreWalletFromSeed());
     },
-    onCheckBalances: (evt) => {
+    onCheckBalances: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(checkBalances());
     },
-    onShowSendToken: (address, tokenSymbol) => {
+    onShowSendToken: (address: string, tokenSymbol?: string) => {
       dispatch(showSendToken(address, tokenSymbol));
     },
     onHideSendToken: () => {
@@ -414,15 +492,15 @@ export function mapDispatchToProps(dispatch) {
     onHideTokenChooser: () => {
       dispatch(hideTokenChooser());
     },
-    onLockWallet: (evt) => {
+    onLockWallet: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(lockWallet());
     },
-    onUnlockWallet: (evt) => {
+    onUnlockWallet: (evt?: HandlerEvent) => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(unlockWallet());
     },
-    onSelectCurrency: (convertTo) => {
+    onSelectCurrency: (convertTo: string) => {
       // if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(selectCurrency(convertTo));
     },

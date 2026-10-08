@@ -15,6 +15,7 @@
  *    }
  */
 import extractRates from 'utils/unitConverter';
+import type { ApiRate } from 'utils/unitConverter';
 import { message } from 'antd';
 import {
   GENERATE_WALLET,
@@ -70,6 +71,37 @@ import {
   LOAD_WALLET_ERROR,
 } from './constants';
 
+/**
+ * Map of token symbol -> token state (plus an optional `index` key holding the
+ * address generation index). Loosely typed: balances are BigNumber objects or
+ * false depending on fetch state.
+ */
+export interface TokenMap {
+  [token: string]: unknown;
+  index?: number;
+}
+
+/** Map of address -> TokenMap */
+export interface AddressMap {
+  [address: string]: TokenMap;
+}
+
+/** Details held per token in the tokenInfo map */
+export interface TokenInfoEntry {
+  name: string;
+  contractAddress: string | null;
+  decimals: number;
+}
+
+/**
+ * Loose structural type for the eth-lightwallet keystore instance. Only the
+ * members used by this codebase are declared; intentionally loosely typed
+ * rather than importing the package's types.
+ */
+export interface KeystoreLike {
+  getAddresses: () => string[];
+}
+
 
 /* ********************************Generate Wallet ******************************* */
 
@@ -91,7 +123,7 @@ export function generateWallet() {
  *
  * @return {object}      An action object with a type of GENERATE_WALLET_SUCCESS passing the repos
  */
-export function generateWalletSucces(seed, password) {
+export function generateWalletSucces(seed: string, password: string) {
   return {
     type: GENERATE_WALLET_SUCCESS,
     seed,
@@ -105,7 +137,7 @@ export function generateWalletSucces(seed, password) {
  *
  * @return {object} An action object with a type of GENERATE_WALLET_ERROR passing the error
  */
-export function generateWalletError(error) {
+export function generateWalletError(error: string) {
   message.error(error);
   return {
     type: GENERATE_WALLET_ERROR,
@@ -154,7 +186,7 @@ export function restoreWalletCancel() {
  *
  * @return {object}    An action object with a type of CHANGE_USER_SEED
  */
-export function changeUserSeed(userSeed) {
+export function changeUserSeed(userSeed: string) {
   return {
     type: CHANGE_USER_SEED,
     userSeed,
@@ -168,7 +200,7 @@ export function changeUserSeed(userSeed) {
  *
  * @return {object}    An action object with a type of CHANGE_USER_SEED
  */
-export function changeUserPassword(userPassword) {
+export function changeUserPassword(userPassword: string) {
   const password = userPassword;// .replace(/^\s+|\s+$/g, '');
   return {
     type: CHANGE_USER_PASSWORD,
@@ -193,7 +225,7 @@ export function restoreWalletFromSeed() {
  *
  * @return {object}    An action object with a type of RESTORE_WALLET_FROM_SEED_SUCCESS
  */
-export function restoreWalletFromSeedSuccess(userSeed, userPassword) {
+export function restoreWalletFromSeedSuccess(userSeed: string, userPassword: string) {
   return {
     type: RESTORE_WALLET_FROM_SEED_SUCCESS,
     userSeed,
@@ -206,7 +238,7 @@ export function restoreWalletFromSeedSuccess(userSeed, userPassword) {
  *
  * @return {object}    An action object with a type of RESTORE_WALLET_FROM_SEED_ERROR
  */
-export function restoreWalletFromSeedError(error) {
+export function restoreWalletFromSeedError(error: string) {
   message.error(error);
   return {
     type: RESTORE_WALLET_FROM_SEED_ERROR,
@@ -241,8 +273,8 @@ export function generateKeystore() {
  * @param {number} [index] address index
  * @return {object}    a tokenMap
  */
-function createTokenMap(tokenList, index) {
-  const reducer = (acc, token) => ({
+function createTokenMap(tokenList: string[], index?: number): TokenMap {
+  const reducer = (acc: TokenMap, token: string): TokenMap => ({
     ...acc,
     ...{ [token]: { balance: false } },
   });
@@ -271,8 +303,8 @@ function createTokenMap(tokenList, index) {
  * @param {string[]} tokenList ['eth','eos','ppt']
  * @return {object}  addressMap
  */
-function createAddressMap(addressesList, tokenList) {
-  const addressMap = {};
+function createAddressMap(addressesList: string[], tokenList: string[]): AddressMap {
+  const addressMap: AddressMap = {};
   for (let i = 0; i < addressesList.length; i += 1) {
     addressMap[addressesList[i]] = createTokenMap(tokenList, i + 1);
   }
@@ -286,7 +318,7 @@ function createAddressMap(addressesList, tokenList) {
  *
  * @return {object}      An action object with a type of GENERATE_KEYSTORE_SUCCESS passing the repos
  */
-export function generateKeystoreSuccess(keystore, tokenList) {
+export function generateKeystoreSuccess(keystore: KeystoreLike, tokenList: string[]) {
   const addresses = keystore.getAddresses();
   const addressMap = createAddressMap(addresses, tokenList);
   /* output:
@@ -312,7 +344,7 @@ export function generateKeystoreSuccess(keystore, tokenList) {
  *
  * @return {object} An action object with a type of GENERATE_KEYSTORE_ERROR passing the error
  */
-export function generateKeystoreError(error) {
+export function generateKeystoreError(error: string) {
   return {
     type: GENERATE_KEYSTORE_ERROR,
     error,
@@ -331,7 +363,7 @@ export function generateKeystoreError(error) {
  *
  * @return {object} An action object with a type of CHANGE_BALANCE with address and balance
  */
-export function changeBalance(address, symbol, balance) {
+export function changeBalance(address: string, symbol: string, balance: unknown) {
   return {
     type: CHANGE_BALANCE,
     address,
@@ -348,7 +380,7 @@ export function changeBalance(address, symbol, balance) {
  *
  * @return {object} An action object with a type of SHOW_SEND_TOKEN
  */
-export function showSendToken(address, sendTokenSymbol) {
+export function showSendToken(address: string, sendTokenSymbol?: string) {
   // console.log(address);
   return {
     type: SHOW_SEND_TOKEN,
@@ -401,8 +433,8 @@ export function hideTokenChooser() {
  *
  * @return {object}    An action object with a type of UPDATE_TOKEN_INFO, tokenInfo and addressMap
  */
-export function updateTokenInfo(addressList, newTokenInfo) {
-  const tokenInfo = {
+export function updateTokenInfo(addressList: string[], newTokenInfo: { [symbol: string]: TokenInfoEntry }) {
+  const tokenInfo: { [symbol: string]: TokenInfoEntry } = {
     eth: {
       name: 'Ethereum',
       contractAddress: null,
@@ -444,7 +476,7 @@ export function generateAddress() {
  * @return {object} An action object with a type of GENERATE_ADDRESS_SUCCESS,
  * newAddress and tokenMap for the new address
  */
-export function generateAddressSuccess(newAddress, index, tokenList) {
+export function generateAddressSuccess(newAddress: string, index: number, tokenList: string[]) {
   const tokenMap = createTokenMap(tokenList);// , index);
   console.log(tokenMap);
 
@@ -463,7 +495,7 @@ export function generateAddressSuccess(newAddress, index, tokenList) {
  *
  * @return {object} An action object with a type of GENERATE_ADDRESS_ERROR passing the error
  */
-export function generateAddressError(error) {
+export function generateAddressError(error: string) {
   message.error(error);
   return {
     type: GENERATE_ADDRESS_ERROR,
@@ -505,7 +537,7 @@ export function unlockWallet() {
  *
  * @return {object}      An action object with a type of UNLOCK_WALLET_SUCCESS and the password
  */
-export function unlockWalletSuccess(password) {
+export function unlockWalletSuccess(password: string) {
   message.success('Wallet unlocked succesfuly');
   return {
     type: UNLOCK_WALLET_SUCCESS,
@@ -520,7 +552,7 @@ export function unlockWalletSuccess(password) {
  *
  * @return {object} An action object with a type of GENERATE_ADDRESS_ERROR passing the error
  */
-export function unlockWalletError(error) {
+export function unlockWalletError(error: string) {
   message.error(error, 5);
   return {
     type: UNLOCK_WALLET_ERROR,
@@ -541,7 +573,7 @@ export function unlockWalletError(error) {
  * @param  {string} tokenList list of relevant tokens: ['eth','eos','ppt']
  * @return {object} An action object with a type of SET_EXCHANGE_RATES and rates converted to proper format:
  */
-export function setExchangeRates(apiRates, requestURL, tokenList) {
+export function setExchangeRates(apiRates: ApiRate[], requestURL: string, tokenList: string[]) {
   const rates = extractRates(apiRates, requestURL, tokenList);
   return {
     type: SET_EXCHANGE_RATES,
@@ -556,7 +588,7 @@ export function setExchangeRates(apiRates, requestURL, tokenList) {
  *
  * @return {object} An action object with a type of SELECT_CURRENCY and selected currency
  */
-export function selectCurrency(convertTo) {
+export function selectCurrency(convertTo: string) {
   return {
     type: SELECT_CURRENCY,
     convertTo,
@@ -638,7 +670,7 @@ export function saveWalletSuccess() {
  *
  * @return {object} An action object with a type of SAVE_WALLET_ERROR
  */
-export function saveWalletError(error) {
+export function saveWalletError(error: string) {
   console.warn(error);
   return {
     type: SAVE_WALLET_ERROR,
@@ -673,11 +705,10 @@ export function loadWalletSuccess() {
  *
  * @return {object} An action object with a type of LOAD_WALLET_ERROR
  */
-export function loadWalletError(error) {
+export function loadWalletError(error: string) {
   console.log(error);
   return {
     type: LOAD_WALLET_ERROR,
     error,
   };
 }
-

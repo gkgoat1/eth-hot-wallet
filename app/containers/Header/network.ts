@@ -1,4 +1,9 @@
-const Network = {
+export interface NetworkInfo {
+  rpc: string;
+  tx_explorer: string | null;
+}
+
+const Network: Record<string, NetworkInfo> = {
   Offline: { rpc: 'offline', tx_explorer: null },
   'Local RPC': { rpc: 'http://127.0.0.1:8545', tx_explorer: null },
   'Ropsten Testnet': { rpc: 'https://ropsten.infura.io/GjiCzFxpQAUkPtDUpKEP', tx_explorer: 'https://ropsten.etherscan.io/tx/' },
