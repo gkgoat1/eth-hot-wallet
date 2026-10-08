@@ -381,6 +381,7 @@ Any other behavior change must be listed here before merge; otherwise behavior i
 | 2026-02-11 | Contract corrections from t-11d7 (v3 vault = tweetnacl secretbox, no AES; scrypt logN=14/r=8/p=1/dklen=32; legacy signing is pre-EIP-155 v=27/28; `hdPathString` stays required) | plan amended |
 | 2026-02-11 | t-11d7 working on branch `modernize` (force-push-free), will ping with pin shas; goldens exchange bidirectional | recorded |
 | 2026-02-11 | t-11d7 Phase 0 done: `modernize` pushed (HEAD `87995a8`, pre-artifact). Original mocha suite 144/144 on Node 26.10.0 (dropped dead hooked-web3-provider devDep). npm audit baseline: 31 vulns (7 crit). Goldens generated at `test/golden/generated/vault-4.0.0.json` (fork, branch modernize): scrypt logN=14/r=8/p=1/dkLen=32, password `golden-test-password-1`, salt `golden-fixed-salt-1` → pwDerivedKey `ac0979cf…c1d042`; mnemonic `abandon…about`, hdPath `m/0'/0'/0'`, first address `0x339bc745c15d75126aba96243ea35271a5f568bf`; 3 legacy txs all v=27; v1/v2→v3 upgrade outputs match existing fixtures | recorded — copy that file into `test/goldens/` in Phase 2 |
+| 2026-02-11 | **Phase 1 groundwork COMPLETE** on `modernize/phase-1-groundwork` (commits ae1ba02…682a357): pnpm migration, CI, eslint 9 flat, vitest + anvil harness, tsc strict. Summary: docs/plans/2026-02-11-phase-1-summary.md | ✅ green |
 
 ## Appendix A — Verified reference artifacts (to fill in during Phase 0/2)
 
