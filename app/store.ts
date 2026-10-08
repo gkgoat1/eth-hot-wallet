@@ -17,7 +17,10 @@ declare global {
   }
 }
 
-export default function configureStore(initialState = {}, history: unknown): Store & InjectableStore {
+export default function configureStore(
+  initialState = {},
+  history: unknown,
+): Store<unknown> & InjectableStore {
   const middlewares = [sagaMiddleware, routerMiddleware(history as never)];
 
   const enhancers = [applyMiddleware(...middlewares)];
@@ -37,7 +40,12 @@ export default function configureStore(initialState = {}, history: unknown): Sto
     createReducer(),
     fromJS(initialState) as never,
     composeEnhancers(...enhancers) as never,
-  ) as Store & InjectableStore;
+  // SAFETY: createStore's typed Store lacks the injector fields (runSaga,
+  // injectedReducers, injectedSagas) that the legacy injectors attach at
+  // runtime; the app relies on them being present. The double assertion is
+  // the minimal bridge until the Phase 6 redux-toolkit rewrite types the
+  // store properly.
+  ) as unknown as Store<unknown> & InjectableStore;
 
   // Extensions
   store.runSaga = sagaMiddleware.run as never;
