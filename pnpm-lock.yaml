@@ -17,6 +17,9 @@ importers:
       babel-polyfill:
         specifier: ^6.26.0
         version: 6.26.0
+      bignumber.js:
+        specifier: ^9.0.1
+        version: 9.0.1
       chalk:
         specifier: ^3.0.0
         version: 3.0.0

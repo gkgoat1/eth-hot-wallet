@@ -83,7 +83,8 @@ const getRate = (tokenList: ApiRate[], path: RatePath): BigNumber | null => {
   const target = tokenList.find(isSymbol);
   if (target && path.key) {
     const value = new BigNumber(target[path.key] as string | number);
-    return path.isInverse ? value.toPower(-1) : value;
+    // bignumber.js@9 renamed toPower -> pow (exponentiatedBy). -1 => inverse.
+    return path.isInverse ? value.pow(-1) : value;
   }
   return null;
 };
