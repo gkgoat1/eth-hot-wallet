@@ -1,4 +1,4 @@
-export const erc20Abi = [
+export const erc20Abi: unknown[] = [
   {
     constant: true,
     inputs: [],

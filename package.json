@@ -256,6 +256,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/invariant": "^2.2.37",
+    "@types/lodash": "^4.17.25",
     "@types/node": "^26.6.4",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.3",

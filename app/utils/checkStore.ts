@@ -3,10 +3,20 @@ import isFunction from 'lodash/isFunction';
 import isObject from 'lodash/isObject';
 import invariant from 'invariant';
 
+export interface InjectableStore {
+  dispatch: unknown;
+  subscribe: unknown;
+  getState: unknown;
+  replaceReducer: unknown;
+  runSaga: unknown;
+  injectedReducers: Record<string, unknown>;
+  injectedSagas: Record<string, unknown>;
+}
+
 /**
  * Validate the shape of redux store
  */
-export default function checkStore(store) {
+export default function checkStore(store: InjectableStore): void {
   const shape = {
     dispatch: isFunction,
     subscribe: isFunction,
@@ -18,6 +28,6 @@ export default function checkStore(store) {
   };
   invariant(
     conformsTo(store, shape),
-    '(app/utils...) injectors: Expected a valid redux store'
+    '(app/utils...) injectors: Expected a valid redux store',
   );
 }
