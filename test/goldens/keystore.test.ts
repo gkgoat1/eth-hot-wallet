@@ -41,14 +41,22 @@ function loadGolden(file: string): Golden {
 // (they were proven byte-equivalent at generation time).
 const GOLDEN_FILES = ['vault-3.0.1.json', 'vault-4.0.0.json'];
 
-// This file tests the legacy npm eth-lightwallet@3.0.1. The modernized Git
-// dep (eth-lightwallet-next) is tested in keystore-next.test.ts — kept in a
-// separate file because bitcore-lib's versionGuard throws if two instances
+// This file tests the legacy npm eth-lightwallet@3.0.1 when present. After
+// the Phase 5 import flip the app no longer depends on npm 3.0.1 (the
+// modernized Git dep is the import); the legacy goldens then serve as the
+// reference the modernized lib matches in keystore-next.test.ts. Skips
+// cleanly when eth-lightwallet is not installed. Kept in a separate file from
+// keystore-next because bitcore-lib's versionGuard throws if two instances
 // load in one module graph (vitest isolates files into workers).
-const lw = require('eth-lightwallet');
+let lw: any = null;
+try {
+  lw = require('eth-lightwallet');
+} catch {
+  // npm 3.0.1 not installed (post-flip) — the legacy-reference suite skips.
+}
 
 type Lw = { keystore: any; signing: any };
-const LIB: Lw = { keystore: lw.keystore, signing: lw.signing };
+const LIB: Lw | null = lw ? { keystore: lw.keystore, signing: lw.signing } : null;
 
 const to0x = (a: string) => (a.startsWith('0x') ? a : `0x${a}`);
 
@@ -80,8 +88,12 @@ function deriveKey(lw: Lw, ks: any, password: string, salt: string): Promise<Uin
   });
 }
 
-describe('eth-lightwallet@3.0.1 (npm)', () => {
-  const lw = LIB;
+// describe.skipIf skips the whole suite when npm 3.0.1 is absent (post-flip).
+// Inside, LIB is non-null.
+const describeLegacy = LIB ? describe : describe.skip;
+
+describeLegacy('eth-lightwallet@3.0.1 (npm)', () => {
+  const lw = LIB!;
 
   describe.each(GOLDEN_FILES)('golden %s', (file) => {
     const golden = loadGolden(file);
