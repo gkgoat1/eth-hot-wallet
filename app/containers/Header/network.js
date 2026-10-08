@@ -1,4 +1,3 @@
-
 const Network = {
   Offline: { rpc: 'offline', tx_explorer: null },
   'Local RPC': { rpc: 'http://127.0.0.1:8545', tx_explorer: null },
@@ -6,4 +5,4 @@ const Network = {
   'Main Net': { rpc: 'https://mainnet.infura.io/GjiCzFxpQAUkPtDUpKEP', tx_explorer: 'https://etherscan.io/tx/' },
 };
 
-module.exports = Network;
+export default Network;

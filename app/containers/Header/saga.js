@@ -1,6 +1,5 @@
-import Web3 from 'web3';
-import SignerProvider from 'vendor/ethjs-provider-signer/ethjs-provider-signer';
 import BigNumber from 'bignumber.js';
+import { createWeb3Adapter } from '@eth-hot-wallet/web3-adapter';
 import { take, call, put, select, takeLatest, race, fork } from 'redux-saga/effects';
 
 import {
@@ -47,7 +46,6 @@ import {
   askFaucetAddress,
 } from 'utils/constants';
 import { timer } from 'utils/common';
-import { erc20Abi } from 'utils/contracts/abi';
 import { message } from 'antd';
 
 import {
@@ -86,8 +84,12 @@ import {
 } from './constants';
 
 import Network from './network';
-const web3 = new Web3(); // eslint-disable-line
-const erc20Contract = web3.eth.contract(erc20Abi);
+
+// Phase 5: web3@0.20 + vendored ethjs-provider-signer replaced by the viem
+// adapter. `adapter` is (re)created per network in loadNetwork; `null` in
+// offline mode. Signing routes through the lightwallet keystore's
+// passwordProvider, scoped to each send (see adapter docs).
+let adapter = null;
 
 /* For development only, if online = false then most api calls will be replaced by constant values
 * affected functions:
@@ -112,7 +114,7 @@ export function* loadNetwork(action) {
     }
 
     if (action.networkName === offlineModeString) {
-      web3.setProvider(null);
+      adapter = null;
       yield put(stopPollingBalances());
       yield put(loadNetworkError(offlineModeString));
       return;
@@ -121,22 +123,9 @@ export function* loadNetwork(action) {
     const keystore = yield select(makeSelectKeystore());
 
     if (keystore) {
-      const provider = new SignerProvider(rpcAddress, {
-        signTransaction: keystore.signTransaction.bind(keystore),
-        accounts: (cb) => cb(null, keystore.getAddresses()),
-      });
+      adapter = createWeb3Adapter({ rpcUrl: rpcAddress, keystore });
 
-      web3.setProvider(provider);
-
-      function getBlockNumberPromise() { // eslint-disable-line no-inner-declarations
-        return new Promise((resolve, reject) => {
-          web3.eth.getBlockNumber((err, data) => {
-            if (err !== null) return reject(err);
-            return resolve(data);
-          });
-        });
-      }
-      const blockNumber = yield call(getBlockNumberPromise);
+      const blockNumber = yield call([adapter, adapter.getBlockNumber]);
 
       yield call(timer, 600);
 
@@ -175,7 +164,7 @@ export function* confirmSendTransaction() {
     const toAddress = yield select(makeSelectTo());
     const gasPrice = yield select(makeSelectGasPrice());
 
-    if (!web3.isAddress(fromAddress)) {
+    if (!(adapter && adapter.isAddress(fromAddress))) {
       throw new Error('Source address invalid');
     }
 
@@ -183,7 +172,7 @@ export function* confirmSendTransaction() {
       throw new Error('Amount must be possitive');
     }
 
-    if (!web3.isAddress(toAddress)) {
+    if (!(adapter && adapter.isAddress(toAddress))) {
       throw new Error('Destenation address invalid');
     }
 
@@ -202,7 +191,6 @@ export function* confirmSendTransaction() {
 
 export function* SendTransaction() {
   const keystore = yield select(makeSelectKeystore());
-  const origProvider = keystore.passwordProvider;
   try {
     const fromAddress = yield select(makeSelectFrom());
     const amount = yield select(makeSelectAmount());
@@ -218,44 +206,37 @@ export function* SendTransaction() {
     if (!keystore) {
       throw new Error('No keystore found - please create wallet');
     }
-    keystore.passwordProvider = (callback) => {
-      // we cannot use selector inside this callback so we use a const value
-      const ksPassword = password;
-      callback(null, ksPassword);
-    };
-
+    // The adapter scopes keystore.passwordProvider for the signing call and
+    // restores it, so we pass the unlocked password directly instead of
+    // mutating the provider here.
     let tx;
     if (tokenToSend === 'eth') {
       const sendAmount = new BigNumber(amount).times(Ether);
-      const sendParams = { from: fromAddress, to: toAddress, value: sendAmount, gasPrice, gas: maxGasForEthSend };
-      function sendTransactionPromise(params) { // eslint-disable-line no-inner-declarations
-        return new Promise((resolve, reject) => {
-          web3.eth.sendTransaction(params, (err, data) => {
-            if (err !== null) return reject(err);
-            return resolve(data);
-          });
-        });
-      }
-      tx = yield call(sendTransactionPromise, sendParams);
+      tx = yield call([adapter, adapter.sendEth], {
+        password,
+        from: fromAddress,
+        to: toAddress,
+        valueWei: BigInt(sendAmount.toFixed(0)),
+        gasPriceWei: BigInt(gasPrice.toFixed(0)),
+        gas: maxGasForEthSend,
+      });
     } else { // any other token
       const tokenInfo = yield select(makeSelectTokenInfo(tokenToSend));
       if (!tokenInfo) {
         throw new Error(`Contract address for token '${tokenToSend}' not found`);
       }
       const contractAddress = tokenInfo.contractAddress;
-      const sendParams = { from: fromAddress, value: '0x0', gasPrice, gas: maxGasForTokenSend };
-      const tokenAmount = amount * (10 ** tokenInfo.decimals); // Big Number??
+      const tokenAmount = new BigNumber(amount).times(new BigNumber(10).pow(tokenInfo.decimals));
 
-      function sendTokenPromise(tokenContractAddress, sendToAddress, sendAmount, params) { // eslint-disable-line no-inner-declarations
-        return new Promise((resolve, reject) => {
-          const tokenContract = erc20Contract.at(tokenContractAddress);
-          tokenContract.transfer.sendTransaction(sendToAddress, sendAmount, params, (err, sendTx) => {
-            if (err) return reject(err);
-            return resolve(sendTx);
-          });
-        });
-      }
-      tx = yield call(sendTokenPromise, contractAddress, toAddress, tokenAmount, sendParams);
+      tx = yield call([adapter, adapter.erc20Transfer], {
+        password,
+        contract: contractAddress,
+        from: fromAddress,
+        to: toAddress,
+        amount: BigInt(tokenAmount.toFixed(0)),
+        gasPriceWei: BigInt(gasPrice.toFixed(0)),
+        gas: maxGasForTokenSend,
+      });
     }
 
     yield put(sendTransactionSuccess(tx));
@@ -263,30 +244,18 @@ export function* SendTransaction() {
     const loc = err.message.indexOf('at runCall');
     const errMsg = (loc > -1) ? err.message.slice(0, loc) : err.message;
     yield put(sendTransactionError(errMsg));
-  } finally {
-    keystore.passwordProvider = origProvider;
   }
 }
 
 
 /* *************  Polling saga and polling flow for check balances ***************** */
 export function getEthBalancePromise(address) {
-  return new Promise((resolve, reject) => {
-    web3.eth.getBalance(address, (err, data) => {
-      if (err !== null) return reject(err);
-      return resolve(data);
-    });
-  });
+  // adapter returns wei as bigint; wrap in BigNumber to match the web3 surface
+  return adapter.getBalance(address).then((b) => new BigNumber(b.toString()));
 }
 
 export function getTokenBalancePromise(address, tokenContractAddress) {
-  return new Promise((resolve, reject) => {
-    const tokenContract = erc20Contract.at(tokenContractAddress);
-    tokenContract.balanceOf.call(address, (err, balance) => {
-      if (err) return reject(err);
-      return resolve(balance);
-    });
-  });
+  return adapter.erc20BalanceOf(tokenContractAddress, address).then((b) => new BigNumber(b.toString()));
 }
 
 
