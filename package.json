@@ -224,7 +224,6 @@
     "chalk": "^3.0.0",
     "compression": "^1.7.4",
     "cross-env": "^7.0.0",
-    "eth-lightwallet": "^3.0.1",
     "eth-lightwallet-next": "github:gkgoat1/eth-lightwallet#5e0c9fa70c3f76d46c24c453c89d90db2b36f409",
     "express": "^4.17.1",
     "fontfaceobserver": "^2.1.0",
