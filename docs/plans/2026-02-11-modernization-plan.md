@@ -408,6 +408,7 @@ Any other behavior change must be listed here before merge; otherwise behavior i
 | 2026-02-11 | npm `eth-lightwallet@3.0.1` tarball sha512 verified MATCH vs lockfile (appendix A) | ✅ |
 | 2026-02-11 | **Phase 2 golden capture COMPLETE**: `scripts/generate-goldens.mjs` + `vault-3.0.1.json`/`vault-4.0.0.json`, cross-version pins equivalent (pwDerivedKey, addresses, privkeys, signed txs, round-trip). Golden vitest harness 10/10; Anvil golden-tx executes on-chain (receipt 0x1). Divergences recorded in §9a | ✅ green |
 | 2026-02-11 | **Phase 3 Git dep wired (early)**: `eth-lightwallet-next` → `github:gkgoat1/eth-lightwallet#298169e` alongside npm 3.0.1; dual golden gate (`keystore-next.test.ts`) passes 20/20 — new lib reproduces identical pins. Awaiting fork's Phase-3 clean-deps sha for the import flip. Fork needs `prepare` for git-dep auto-build (t-11d7 adding); clean-clone builds only (shared-tree npm/pnpm collision) | ✅ gate green @ 298169e |
+| 2026-02-11 | **Phase 4 `packages/web3-adapter` COMPLETE**: viem-based drop-in (`createWeb3Adapter`) for the web3@0.20+SignerProvider surface; scoped-password keystore signing (sendEth/erc20Transfer), nonce from chain; tsdown dual ESM/CJS+types; Anvil integration green (signed ETH send + ERC-20 transfer on-chain). Re-pinned `eth-lightwallet-next` to `dc1e7b2` (fork Phase 3 clean deps); golden gate still 20/20 | ✅ green |
 
 ## Appendix A — Verified reference artifacts (to fill in during Phase 0/2)
 
