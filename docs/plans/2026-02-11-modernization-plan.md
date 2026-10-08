@@ -346,14 +346,14 @@ golden generator and confirmed in source. They shape the acceptance gate:
 2. **`valueTx` recipients must avoid precompiles.** A value transfer to `0x01`–`0x09`
    executes the precompile and OOGs at the 21000 gas budget (`PrecompileOOG` on Anvil).
    Golden recipients use `0x1000…00{1,2,3}` instead. (Testing footgun, not a code bug.)
-3. **Message signing nonce is not byte-stable across implementations** (t-11d7, Phase 3c):
-   legacy `signMsg`/`signMsgHash` route through ethereumjs-util@6 → native secp256k1's
-   RFC6979-with-`pers`, which no `@noble/curves` variant reproduces. **Decision
-   (2026-02-11, both sessions):** modernized lib uses strict-RFC6979 (noble) — deterministic,
-   valid, recoverable; message-sig bytes differ from legacy, which was never stable across
-   impls anyway. hot-wallet does not use message signing. Golden plan: assert
-   validity+recovery, not byte pins, for `signMsg`. Tx signing is unaffected and stays
-   byte-pinned.
+3. **Message signing** (t-11d7, Phase 3c/e): legacy `signMsg`/`signMsgHash` route through
+   ethereumjs-util@6 → native secp256k1. Initially thought non-reproducible, but t-11d7 found
+   **viem's `sign()` reproduces the legacy message-sig bytes exactly** (its pinned noble
+   1.9.1 path is correct; standalone @noble/curves 2.4.0 has a lowS recovery-bit bug). So
+   message sigs CAN be byte-pinned. **API change:** `signMsg`/`signMsgHash`/`recoverAddress`
+   are now **async** (return Promises; viem sign is async); `signTx` stays sync. hot-wallet
+   doesn't use message signing, so no app impact. `recoverAddress` (verification) is
+   RFC6979-independent and stays exact.
 
 ## 9. Known latent bugs in the original (fix during migration, with regression tests)
 
@@ -409,6 +409,7 @@ Any other behavior change must be listed here before merge; otherwise behavior i
 | 2026-02-11 | **Phase 2 golden capture COMPLETE**: `scripts/generate-goldens.mjs` + `vault-3.0.1.json`/`vault-4.0.0.json`, cross-version pins equivalent (pwDerivedKey, addresses, privkeys, signed txs, round-trip). Golden vitest harness 10/10; Anvil golden-tx executes on-chain (receipt 0x1). Divergences recorded in §9a | ✅ green |
 | 2026-02-11 | **Phase 3 Git dep wired (early)**: `eth-lightwallet-next` → `github:gkgoat1/eth-lightwallet#298169e` alongside npm 3.0.1; dual golden gate (`keystore-next.test.ts`) passes 20/20 — new lib reproduces identical pins. Awaiting fork's Phase-3 clean-deps sha for the import flip. Fork needs `prepare` for git-dep auto-build (t-11d7 adding); clean-clone builds only (shared-tree npm/pnpm collision) | ✅ gate green @ 298169e |
 | 2026-02-11 | **Phase 4 `packages/web3-adapter` COMPLETE**: viem-based drop-in (`createWeb3Adapter`) for the web3@0.20+SignerProvider surface; scoped-password keystore signing (sendEth/erc20Transfer), nonce from chain; tsdown dual ESM/CJS+types; Anvil integration green (signed ETH send + ERC-20 transfer on-chain). Re-pinned `eth-lightwallet-next` to `dc1e7b2` (fork Phase 3 clean deps); golden gate still 20/20 | ✅ green |
+| 2026-02-11 | **Fork Phase 3 COMPLETE (t-11d7)**: `eth-lightwallet-next` re-pinned to `a1d16c9` (full sha `a1d16c946723f583ec2c235eab788a4159536517`) — all legacy runtime deps dropped (12 runtime deps, `npm audit --omit=dev` = 0 vulns, baseline was 31). Golden gate 20/20 against clean-deps build. signMsg byte-exact via viem (async API change noted §9a.3). `prepare` in fork's working tree (uncommitted) — until committed, dist/ copied from clean-clone build. Import flip candidate | ✅ gate green @ a1d16c9 |
 
 ## Appendix A — Verified reference artifacts (to fill in during Phase 0/2)
 

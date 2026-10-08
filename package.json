@@ -224,7 +224,7 @@
     "compression": "^1.7.4",
     "cross-env": "^7.0.0",
     "eth-lightwallet": "^3.0.1",
-    "eth-lightwallet-next": "github:gkgoat1/eth-lightwallet#dc1e7b2eb5e68ebfd458d5b727dbe86fe1728882",
+    "eth-lightwallet-next": "github:gkgoat1/eth-lightwallet#a1d16c946723f583ec2c235eab788a4159536517",
     "express": "^4.17.1",
     "fontfaceobserver": "^2.1.0",
     "history": "^4.10.1",
