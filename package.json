@@ -32,14 +32,18 @@
     "clean": "shjs ./internals/scripts/clean.js",
     "clean:all": "npm run analyze:clean && npm run test:clean && npm run build:clean",
     "generate": "plop --plopfile internals/generators/index.js",
-    "lint": "npm run lint:js",
+    "lint": "eslint . --config eslint.config.mjs",
+    "lint:legacy": "npm run lint:js",
     "lint:eslint": "eslint --ignore-path .gitignore --ignore-pattern internals/scripts",
     "lint:js": "npm run lint:eslint -- . ",
     "lint:staged": "lint-staged",
-    "pretest": "npm run test:clean && npm run lint",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "pretest": "npm run test:clean",
     "test:clean": "rimraf ./coverage",
-    "test": "cross-env NODE_ENV=test jest --coverage",
-    "test:watch": "cross-env NODE_ENV=test jest --watchAll",
+    "test": "vitest run",
+    "test:anvil": "vitest run test/anvil",
+    "test:legacy": "cross-env NODE_ENV=test jest --coverage",
+    "test:legacy:watch": "cross-env NODE_ENV=test jest --watchAll",
     "coveralls": "cat ./coverage/lcov.info | coveralls"
   },
   "lint-staged": {
@@ -169,11 +173,6 @@
     }
   },
   "packageManager": "pnpm@11.8.0",
-  "pnpm": {
-    "overrides": {
-      "bignumber.js@git+https://github.com/frozeman/bignumber.js-nolookahead.git": "9.0.1"
-    }
-  },
   "dllPlugin": {
     "path": "node_modules/react-boilerplate-dlls",
     "exclude": [
@@ -256,6 +255,8 @@
     "whatwg-fetch": "^2.0.4"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.4",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.3",
     "babel-eslint": "7.2.3",
@@ -277,7 +278,7 @@
     "css-loader": "0.28.7",
     "empty-module": "^0.0.2",
     "enzyme": "2.8.2",
-    "eslint": "3.19.0",
+    "eslint": "9.39.5",
     "eslint-config-airbnb": "15.0.1",
     "eslint-config-airbnb-base": "11.2.0",
     "eslint-import-resolver-webpack": "0.8.3",
@@ -288,6 +289,7 @@
     "eventsource-polyfill": "0.9.6",
     "exports-loader": "0.6.4",
     "file-loader": "0.11.1",
+    "globals": "^17.13.0",
     "html-loader": "0.4.5",
     "html-webpack-plugin": "2.29.0",
     "image-webpack-loader": "2.0.0",
@@ -299,12 +301,16 @@
     "null-loader": "0.1.1",
     "offline-plugin": "4.8.1",
     "plop": "1.8.0",
+    "prettier": "^3.9.9",
     "react-test-renderer": "15.5.4",
     "rimraf": "2.6.2",
     "shelljs": "0.7.7",
     "sinon": "2.3.2",
     "style-loader": "0.18.1",
+    "typescript": "~5.6.3",
+    "typescript-eslint": "^8.71.1",
     "url-loader": "0.5.8",
+    "vitest": "^3.2.7",
     "webpack": "3.12.0",
     "webpack-dev-middleware": "1.11.0",
     "webpack-hot-middleware": "2.23.1",

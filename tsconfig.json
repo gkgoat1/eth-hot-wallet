@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "types": ["node"],
+    "paths": {
+      "components/*": ["./app/components/*"],
+      "containers/*": ["./app/containers/*"],
+      "utils/*": ["./app/utils/*"],
+      "vendor/*": ["./app/vendor/*"]
+    }
+  },
+  "include": ["packages/**/*", "test/**/*", "scripts/**/*", "*.config.*", "vitest.config.ts"],
+  "exclude": ["node_modules", "build", "coverage", "dist"]
+}

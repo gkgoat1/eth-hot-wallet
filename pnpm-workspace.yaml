@@ -1,25 +1,26 @@
 packages:
   - packages/*
-allowBuilds:
-  core-js: set this to true or false
-  ejs: set this to true or false
-  es5-ext: set this to true or false
-  fsevents: set this to true or false
-  gifsicle: set this to true or false
-  jpegtran-bin: set this to true or false
-  keccak: set this to true or false
-  lint-staged: set this to true or false
-  ngrok: set this to true or false
-  optipng-bin: set this to true or false
-  pngquant-bin: set this to true or false
-  secp256k1: set this to true or false
-  spawn-sync: set this to true or false
-  uglifyjs-webpack-plugin: set this to true or false
 blockExoticSubdeps: false
-onlyBuiltDependencies:
-  - core-js
-  - es5-ext
-  - fsevents
-  - keccak
-  - secp256k1
-  - spawn-sync
+overrides:
+  # web3@0.20.7 depends on this git fork of bignumber.js; pin to the
+  # equivalent npm release so pnpm can resolve it reproducibly.
+  "bignumber.js@git+https://github.com/frozeman/bignumber.js-nolookahead.git":
+    9.0.1
+# pnpm 11 build-script policy: true = allowed to run postinstall,
+# false = explicitly blocked (silences ERR_PNPM_IGNORED_BUILDS).
+allowBuilds:
+  core-js: true
+  ejs: false
+  es5-ext: true
+  esbuild: true
+  fsevents: true
+  gifsicle: false
+  jpegtran-bin: false
+  keccak: true
+  lint-staged: false
+  ngrok: false
+  optipng-bin: false
+  pngquant-bin: false
+  secp256k1: true
+  spawn-sync: true
+  uglifyjs-webpack-plugin: false
