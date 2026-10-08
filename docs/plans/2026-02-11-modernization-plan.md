@@ -92,7 +92,8 @@ Generate fixtures **with the original, verified code** before changing anything:
   at 4.0.0):
   * `generateRandomSeed(entropy)` shape validation;
   * `createVault({password, seedPhrase, hdPathString})` → full serialized vault JSON for a
-    **fixed seed + fixed password** (scrypt params captured);
+    **fixed seed + fixed password** (scrypt params captured: logN=14, r=8, p=1, dklen=32 —
+    confirmed in source);
   * `keyFromPassword` + `generateNewAddress(pwDerivedKey, n)` → first 5 addresses for the
     fixed vault (these are deterministic given seed+path);
   * `signing.signTransaction` for 3 canned txs (ETH transfer, ERC-20 `transfer`, contract
@@ -207,18 +208,34 @@ verified here before the import flip):
     mnemonic + seed; keep HD derivation via **`@scure/bip32`**.
     *Compatibility note:* lightwallet's `generateRandomSeed` historically produced BIP39
     mnemonics; validate against goldens. Randomness via `@noble/hashes`/`crypto.getRandomValues`.
-  * `crypto-js` (AES + SHA) → **`@noble/ciphers`** / WebCrypto; must decrypt existing
-    vaults (AES-128-CTR as used by lightwallet encryption.js — verify against goldens).
-  * `scrypt-async` → **`@noble/hashes` scrypt** with identical params (n=1024, r=8, p=1,
-    dklen=32 per lightwallet defaults — confirm in source).
+  * ~~`crypto-js` → `@noble/ciphers`~~ **CORRECTED (t-11d7, 2026-02-11):** the v3 vault
+    format uses **no AES at all** — `encryption.js`/`keystore.js` are pure tweetnacl
+    (`secretbox` XSalsa20-Poly1305 for seed/HD-root/keys; `nacl.box` for the asymmetric
+    module). Keep **`tweetnacl@1.0.x`** (stable, pure JS, isomorphic); `@noble/ciphers` has
+    no xsalsa20-poly1305. `crypto-js` survives only in `upgrade.js`'s v1 path
+    (PBKDF2-HMAC-SHA1, 150 iters; AES-256-CBC via EVP_BytesToKey-style KDF; SHA3('') of the
+    derived key as password check), keyed by fixtures `test/fixtures/lightwallet.json` (v1)
+    and `lightwalletv2.json` (v2); may be reimplemented on `@noble/ciphers` AES-CBC +
+    `@noble/hashes` PBKDF2 — goldens decide.
+  * `scrypt-async` → **`@noble/hashes` scrypt** with **identical params, confirmed in
+    source by t-11d7: `logN=14` (n=16384), r=8, p=1, dklen=32**
+    (`lib/keystore.js#deriveKeyFromPasswordAndSalt`). ⚠️ n=1024 vaults would be
+    incompatible with every existing lightwallet vault.
   * `ethereumjs-tx` 1.x / `ethereumjs-util` 6.x → **`@ethereumjs/tx` 5.x + `@ethereumjs/util`
-    9.x** (or viem's signing internals) with **legacy (non-EIP-1559) tx support retained**,
-    since goldens are legacy txs. Keep `chainId` EIP-155 semantics identical.
+    9.x** with **legacy signing retained**. **CORRECTED (t-11d7):** ethereumjs-tx@1 signs
+    **pre-EIP-155 by default** (v = recid + 27, no chainId) and `keystore.js` never passes
+    one — fixtures pin `rawSignedTx` with v=27/28. Default must stay non-EIP-155; EIP-155
+    only when the caller explicitly supplies `chainId`.
   * `elliptic` (direct) → `@noble/curves/secp256k1` (transitively via scure).
-  * `tweetnacl`/`tweetnacl-util`: only used for `nacl` secretbox in upgrade paths — keep or
-    replace with `@noble/ciphers` equivalent; verify with goldens.
   * drop `web3` 0.20 dependency entirely (it was only used for `toWei`-style helpers in
     examples).
+* API surface (confirmed with t-11d7): `module.exports = { txutils, encryption, signing,
+  keystore, upgrade }` exactly as 4.0.0, with ESM named+default exports mapping to it.
+  3.0.1 consumers touching `keystore.Signing`/`keystore.TxUtils` are served by the
+  top-level `signing`/`txutils` exports. **Behavior note:** 4.0.0 makes `hdPathString`
+  **required** in `createVault` (3.0.1 defaulted to `m/0'/0'/0'`) — **keep 4.0.0 strict
+  behavior** (decided 2026-02-11; hot-wallet already passes `hdPathString` explicitly, and
+  silently defaulting a derivation path is a footgun).
 * Build with **tsdown**: `entry: src/index.ts`, outputs:
   * `dist/index.js` (ESM) + `dist/index.cjs` (CJS) + `dist/index.d.ts`;
   * `package.json` with `"type": "module"`, `exports` map:
@@ -227,7 +244,11 @@ verified here before the import flip):
 * Tests: vitest unit tests ported from `test/*.js` (mocha) + goldens + Anvil comparison
   (sign with old vs new, submit both).
 * Tests in the fork: vitest unit tests ported from `test/*.js` (mocha) + the shared goldens
-  from this repo's `test/goldens/**` + Anvil comparison (sign with old vs new, submit both).
+  from this repo's `test/goldens/**` (copied into the fork's `test/golden-external/` with
+  provenance) + Anvil comparison (sign with old vs new, submit both). Goldens flow
+  **bidirectionally**: the fork also publishes its regenerated goldens (fixed salt+password
+  serialized vault, first-5 addresses, 3 signed legacy txs, v1/v2→v3 upgrade outputs) which
+  this repo re-runs.
 * Release (fork repo's responsibility): scoped package (`@gkg/eth-lightwallet` or similar);
   until published, this repo consumes the **Git dependency** per the transition strategy
   above. Publishing happens from `gkgoat1/eth-lightwallet`, not from this repo.
@@ -338,6 +359,7 @@ Any other behavior change must be listed here before merge; otherwise behavior i
 | antd 3→5 visual regressions | Component-level isolation; screenshot diffs optional; accept minor visual drift, no functional drift |
 | redux-immutable removal breaks selectors | Selector-level goldens; container-by-container port |
 | Parallel lightwallet session diverges from the contract (API drift, no CJS build, moving branch) | Git dep pinned by commit; §5.1 gate (goldens + Anvil + CJS smoke) must pass before the import flip; npm 3.0.1 stays until then |
+| Plan written against wrong crypto facts (AES-CTR/scrypt-n assumptions) | Corrected 2026-02-11 per t-11d7's source-verified report (v3 = tweetnacl secretbox; scrypt logN=14; pre-EIP-155 default signing). Goldens, not prose, are the final arbiter |
 | `crypto-js` quirks (non-standard KDF usage in `encryption.js`) | Read `lib/encryption.js` carefully; noble replacements must match byte-for-byte — covered by vault goldens |
 | Publishing scope/name availability | Decide scope early (`npm view`); until decided, packages stay private/workspace-only |
 
@@ -356,6 +378,8 @@ Any other behavior change must be listed here before merge; otherwise behavior i
 | 2026-02-11 | Fork integrity check (lightwallet vs upstream) | PASS — identical to `ConsenSys/eth-lightwallet@d21df74` |
 | 2026-02-11 | hot-wallet tree clean, matches upstream HEAD `286ce41` | PASS |
 | 2026-02-11 | Decision: keystore port owned by parallel session `t-11d7` in `gkgoat1/eth-lightwallet`; consumed here as commit-pinned Git dep under alias `eth-lightwallet-next`; npm 3.0.1 kept until §5.1 gate passes | recorded |
+| 2026-02-11 | Contract corrections from t-11d7 (v3 vault = tweetnacl secretbox, no AES; scrypt logN=14/r=8/p=1/dklen=32; legacy signing is pre-EIP-155 v=27/28; `hdPathString` stays required) | plan amended |
+| 2026-02-11 | t-11d7 working on branch `modernize` (force-push-free), will ping with pin shas; goldens exchange bidirectional | recorded |
 
 ## Appendix A — Verified reference artifacts (to fill in during Phase 0/2)
 
