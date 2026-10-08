@@ -407,6 +407,7 @@ Any other behavior change must be listed here before merge; otherwise behavior i
 | 2026-02-11 | **Phase 1 groundwork COMPLETE** on `modernize/phase-1-groundwork` (commits ae1ba02…682a357): pnpm migration, CI, eslint 9 flat, vitest + anvil harness, tsc strict. Summary: docs/plans/2026-02-11-phase-1-summary.md | ✅ green |
 | 2026-02-11 | npm `eth-lightwallet@3.0.1` tarball sha512 verified MATCH vs lockfile (appendix A) | ✅ |
 | 2026-02-11 | **Phase 2 golden capture COMPLETE**: `scripts/generate-goldens.mjs` + `vault-3.0.1.json`/`vault-4.0.0.json`, cross-version pins equivalent (pwDerivedKey, addresses, privkeys, signed txs, round-trip). Golden vitest harness 10/10; Anvil golden-tx executes on-chain (receipt 0x1). Divergences recorded in §9a | ✅ green |
+| 2026-02-11 | **Phase 3 Git dep wired (early)**: `eth-lightwallet-next` → `github:gkgoat1/eth-lightwallet#298169e` alongside npm 3.0.1; dual golden gate (`keystore-next.test.ts`) passes 20/20 — new lib reproduces identical pins. Awaiting fork's Phase-3 clean-deps sha for the import flip. Fork needs `prepare` for git-dep auto-build (t-11d7 adding); clean-clone builds only (shared-tree npm/pnpm collision) | ✅ gate green @ 298169e |
 
 ## Appendix A — Verified reference artifacts (to fill in during Phase 0/2)
 
