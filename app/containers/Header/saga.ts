@@ -141,7 +141,13 @@ export function* loadNetwork(action: LoadNetworkAction): Generator {
 
       const prevNetwork = yield select(makeSelectPrevNetworkName());
       if (prevNetwork !== action.networkName) {
-        yield put(updateTokenInfo(keystore.getAddresses, action.tokenInfo));
+        // Regression fix (plan §9.1): the original passed `keystore.getAddresses`
+        // (the method reference, whose .length is 0) and `action.tokenInfo`
+        // (undefined on LOAD_NETWORK) — so createAddressMap iterated 0 entries
+        // and the address list was silently emptied on every network change.
+        // Intended behavior: keep existing addresses, reset tokens to the
+        // eth-only default (updateTokenInfo always includes eth).
+        yield put(updateTokenInfo(keystore.getAddresses(), {}));
       }
 
       const usedFaucet = yield select(makeSelectUsedFaucet());

@@ -24,7 +24,9 @@ function CheckBalancesStatus({ checkingBalanceDoneTime, checkingBalances, checki
     return <div> {checkingBalancesError} </div>;
   }
 
-  const balanceCheckString = checkingBalanceDoneTime ? `balances checked on  + ${checkingBalanceDoneTime}` : 'Balances wasnt checked yet';
+  // Regression fix (plan §9a): dropped a literal ' + ' left over from a
+  // string-concat -> template-literal migration (rendered "checked on  + …").
+  const balanceCheckString = checkingBalanceDoneTime ? `balances checked on ${checkingBalanceDoneTime}` : 'Balances wasnt checked yet';
   return (
     <div>
       {balanceCheckString}

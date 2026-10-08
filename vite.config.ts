@@ -14,6 +14,9 @@ export default defineConfig({
       containers: resolve(__dirname, 'app/containers'),
       utils: resolve(__dirname, 'app/utils'),
       vendor: resolve(__dirname, 'app/vendor'),
+      // react-intl was never a real dependency (i18n disabled); local stub
+      // preserves the defineMessages/FormattedMessage surface the app uses.
+      'react-intl': resolve(__dirname, 'app/utils/react-intl-stub.tsx'),
       // modernized packages
       '@eth-hot-wallet/web3-adapter': resolve(__dirname, 'packages/web3-adapter/src/index.ts'),
     },
