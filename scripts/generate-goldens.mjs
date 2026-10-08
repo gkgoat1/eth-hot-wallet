@@ -111,11 +111,14 @@ function keyFromPasswordPromise(ks) {
 function signTxs(ks, pwDerivedKey, addresses) {
   const from = addresses[0];
   const txs = [
+    // Recipients avoid the 0x01-0x09 precompile range: a value transfer to a
+    // precompile address executes it and runs out of the 21000 gas budget
+    // (observed: PrecompileOOG on Anvil). Use non-precompile EOAs.
     {
       name: 'eth-transfer',
       build: () =>
         txutils.valueTx({
-          to: '0x0000000000000000000000000000000000000001',
+          to: '0x1000000000000000000000000000000000000001',
           value: '0x01',
           gasLimit: '0x5208',
           gasPrice: '0x04a817c800',
@@ -126,7 +129,7 @@ function signTxs(ks, pwDerivedKey, addresses) {
       name: 'eth-transfer-larger',
       build: () =>
         txutils.valueTx({
-          to: '0x0000000000000000000000000000000000000002',
+          to: '0x1000000000000000000000000000000000000002',
           value: '0x0de0b6b3a7640000',
           gasLimit: '0x5208',
           gasPrice: '0x0ba43b7400',
@@ -137,7 +140,7 @@ function signTxs(ks, pwDerivedKey, addresses) {
       name: 'eth-transfer-higher-nonce',
       build: () =>
         txutils.valueTx({
-          to: '0x0000000000000000000000000000000000000003',
+          to: '0x1000000000000000000000000000000000000003',
           value: '0x16345785d8a0000',
           gasLimit: '0x5208',
           gasPrice: '0x04a817c800',

@@ -332,6 +332,29 @@ Order matters; do these as separate commits inside the phase:
   update it for the vite output dir).
 * Changesets (`@changesets/cli`) for versioning the two packages; tag releases in both repos.
 
+## 9a. Behavioral divergences found in Phase 2 (golden capture)
+
+These are differences between npm `3.0.1` and the fork's frozen 4.0.0 — surfaced by the
+golden generator and confirmed in source. They shape the acceptance gate:
+
+1. **`txutils.valueTx` drops `data` in 3.0.1.** 3.0.1's `valueTx` copies only
+   `to/gasPrice/gasLimit/nonce/value` and silently discards `txObject.data`; 4.0.0's
+   `createTx` passes `data` through. Data-bearing value txs therefore differ between
+   versions. Impact on hot-wallet: **none** — the app never imports `txutils` (verified);
+   contract calls go through web3. The goldens use data-free value txs so 3.0.1 and 4.0.0
+   compare byte-for-byte. Data-field signing is exercised separately in the Anvil suite.
+2. **`valueTx` recipients must avoid precompiles.** A value transfer to `0x01`–`0x09`
+   executes the precompile and OOGs at the 21000 gas budget (`PrecompileOOG` on Anvil).
+   Golden recipients use `0x1000…00{1,2,3}` instead. (Testing footgun, not a code bug.)
+3. **Message signing nonce is not byte-stable across implementations** (t-11d7, Phase 3c):
+   legacy `signMsg`/`signMsgHash` route through ethereumjs-util@6 → native secp256k1's
+   RFC6979-with-`pers`, which no `@noble/curves` variant reproduces. **Decision
+   (2026-02-11, both sessions):** modernized lib uses strict-RFC6979 (noble) — deterministic,
+   valid, recoverable; message-sig bytes differ from legacy, which was never stable across
+   impls anyway. hot-wallet does not use message signing. Golden plan: assert
+   validity+recovery, not byte pins, for `signMsg`. Tx signing is unaffected and stays
+   byte-pinned.
+
 ## 9. Known latent bugs in the original (fix during migration, with regression tests)
 
 Per repo policy, latent bugs get fixed, not preserved — but each fix is called out and
@@ -382,11 +405,13 @@ Any other behavior change must be listed here before merge; otherwise behavior i
 | 2026-02-11 | t-11d7 working on branch `modernize` (force-push-free), will ping with pin shas; goldens exchange bidirectional | recorded |
 | 2026-02-11 | t-11d7 Phase 0 done: `modernize` pushed (HEAD `87995a8`, pre-artifact). Original mocha suite 144/144 on Node 26.10.0 (dropped dead hooked-web3-provider devDep). npm audit baseline: 31 vulns (7 crit). Goldens generated at `test/golden/generated/vault-4.0.0.json` (fork, branch modernize): scrypt logN=14/r=8/p=1/dkLen=32, password `golden-test-password-1`, salt `golden-fixed-salt-1` → pwDerivedKey `ac0979cf…c1d042`; mnemonic `abandon…about`, hdPath `m/0'/0'/0'`, first address `0x339bc745c15d75126aba96243ea35271a5f568bf`; 3 legacy txs all v=27; v1/v2→v3 upgrade outputs match existing fixtures | recorded — copy that file into `test/goldens/` in Phase 2 |
 | 2026-02-11 | **Phase 1 groundwork COMPLETE** on `modernize/phase-1-groundwork` (commits ae1ba02…682a357): pnpm migration, CI, eslint 9 flat, vitest + anvil harness, tsc strict. Summary: docs/plans/2026-02-11-phase-1-summary.md | ✅ green |
+| 2026-02-11 | npm `eth-lightwallet@3.0.1` tarball sha512 verified MATCH vs lockfile (appendix A) | ✅ |
+| 2026-02-11 | **Phase 2 golden capture COMPLETE**: `scripts/generate-goldens.mjs` + `vault-3.0.1.json`/`vault-4.0.0.json`, cross-version pins equivalent (pwDerivedKey, addresses, privkeys, signed txs, round-trip). Golden vitest harness 10/10; Anvil golden-tx executes on-chain (receipt 0x1). Divergences recorded in §9a | ✅ green |
 
 ## Appendix A — Verified reference artifacts (to fill in during Phase 0/2)
 
 | Artifact | Digest / ref | Verified on | By |
 | --- | --- | --- | --- |
 | `gkgoat1/eth-lightwallet` HEAD | `d21df74dd2d5e09632bf38309f147784668b1498` == upstream | 2026-02-11 | agent |
-| npm `eth-lightwallet@3.0.1` tarball | sha512 (from yarn.lock) `79vVCETy+4l1b6wuOWwjqPW3Bom5ZK46BgkUNwaXhiMG1rrMRHjpjYEWMqH0JHeCzOzB4HBIFz7eK1/4s6w5nA==` | pending | — |
+| npm `eth-lightwallet@3.0.1` tarball | sha512 `79vVCETy+4l1b6wuOWwjqPW3Bom5ZK46BgkUNwaXhiMG1rrMRHjpjYEWMqH0JHeCzOzB4HBIFz7eK1/4s6w5nA==` — **MATCH** vs lockfile pin (`npm pack` → sha512) | 2026-02-11 | agent |
 | `eth-hot-wallet` HEAD | `286ce41` | 2026-02-11 | agent |

@@ -24,7 +24,7 @@
       "salt": "golden-fixed-salt-1",
       "hdPathString": "m/0'/0'/0'"
     },
-    "serialized": "{\"encSeed\":{\"encStr\":\"geObxxnAW8JTCoxVWeyMJz8JNh35Z4h+VKB97xAXN/8pV3xD6cIG7TAyC6sqTaLz7kKPyqPnDVqFR0VU0svYay+p9BvKBTrqX+MdfzgAkHDb77whtjlli5G11N2UVDyQVPBYpAo9JxDZu8PtCqWr15OQC7LtaWy4F4Q6YSdY/0Wj1MPprkba6g==\",\"nonce\":\"3tJKAuvkAFQTTcUUqcHaLyy46KWtu9Us\"},\"encHdRootPriv\":{\"encStr\":\"QolM88cSDh9gAmdQ8uooUOZCa+B1i6ydBknDhqT4xvtWLgOsM0F2dP8pz5VRpMoGp9wqyTs8YZKfi9qyEQVg0p2BRMHZVklN8b8ia0BadMJ0q+Lcg2UrDUAPP4RoE4ry8p6rlQAoQ7hq81Skgyr6/gI048s6fX9lE0qvI8aDeA==\",\"nonce\":\"YpfG0prPtai4tz5R9nKl6M+sDEKVUyE6\"},\"addresses\":[\"339bc745c15d75126aba96243ea35271a5f568bf\",\"4720bb8d2c3e314e1541566330d480c76e4ea07e\",\"30eada0533b18d724e2c9f7a6c41edb0af786464\",\"ede64dbe5b9ef8f96cdc59fd1c34d96ad070e3ea\",\"d50fbacb773130fc39b7167cdae94f54cf19619d\"],\"encPrivKeys\":{\"339bc745c15d75126aba96243ea35271a5f568bf\":{\"key\":\"PlUlcU0rHcq9K4hi7ohZrWWzwy53BJWeHEWO7KpNzdBknTVwbpuIgU3OpUksQy1K\",\"nonce\":\"/WetY2rueXHXRKVM5mokKIN+QgSZVp0k\"},\"4720bb8d2c3e314e1541566330d480c76e4ea07e\":{\"key\":\"Lb99VdYnDF4k0X3czLiBQcYU2N3L/4lDYWzGevuFL3WSUyXDavgzCTFxULzuNxRZ\",\"nonce\":\"RnNposijOUG3qTZoBINCKn7v3WylzGhh\"},\"30eada0533b18d724e2c9f7a6c41edb0af786464\":{\"key\":\"i3OzIF+Q1+3ZuKx+1P8d0XOHSykHmvJoYHWr4dh00mQQklXkQL3ttfVYfb59V4ex\",\"nonce\":\"H+GL4yEEWCCW6gESg17lXoY+lONXXsR3\"},\"ede64dbe5b9ef8f96cdc59fd1c34d96ad070e3ea\":{\"key\":\"5WU44h4yFJ7eHlWvQvurkVf6P1XxnHg0HqTdGqb2m7hUM0H97DyLQ1skA1gbIcr9\",\"nonce\":\"QruQe2r1AOse/r65UyKkf8JfJlPJq94X\"},\"d50fbacb773130fc39b7167cdae94f54cf19619d\":{\"key\":\"KXaxlQblaPPz6XulpFDndArqM+ZflVPLIXEdxT2RCX9xrsq/rkRAZwVa8S25I+8f\",\"nonce\":\"bQEvCiKr4WlhDxOAjFX75l1paw0w7l/t\"}},\"hdPathString\":\"m/0'/0'/0'\",\"salt\":\"golden-fixed-salt-1\",\"hdIndex\":5,\"version\":3}",
+    "serialized": "{\"encSeed\":{\"encStr\":\"caoe9qjCbIOQ3/JypnxZLWlMjT0QXIPgb16tef0lcK4fGqAQI4IXMercjzSwPoKrIKShQEpJAPtL2bXIZ8agGZYUQ0bqhh28djsgW9yHnD9Nf8R1wZa0ueXXAwp95USDVLKlgNBeumPAWNSO6/RugnCN+opdyW3xQnxyDfqBaphSBEetd+2Y3Q==\",\"nonce\":\"rHlO+PU0bdSYjEirjRPab3A5pYLZ8c4j\"},\"encHdRootPriv\":{\"encStr\":\"96Syf8meeDHZX6WoVuhBBZ51pJ5e7seK71uF7zXM3f25RpEItBweQNSdon6/JUN/a7+kwFVtTfYi6o//oBDRK2FImFVGu978pyf1SvDDEJc4Yj/f3RvIHSb8C5+91gdUQgJxpYa5qVrEbqwZrCYI061p8CJrQQXCn5wlEaUndQ==\",\"nonce\":\"P7o5dpwdZebDUnuj/xRUPEDSKPn2NzRj\"},\"addresses\":[\"339bc745c15d75126aba96243ea35271a5f568bf\",\"4720bb8d2c3e314e1541566330d480c76e4ea07e\",\"30eada0533b18d724e2c9f7a6c41edb0af786464\",\"ede64dbe5b9ef8f96cdc59fd1c34d96ad070e3ea\",\"d50fbacb773130fc39b7167cdae94f54cf19619d\"],\"encPrivKeys\":{\"339bc745c15d75126aba96243ea35271a5f568bf\":{\"key\":\"zL0VYbDfaaJfu5G2sjvUcDnKQZnfIOzOuUv0uCgMBsY8ugRofz6WO8e/VWSzwL2o\",\"nonce\":\"Y24MW/mxKWQMPk8Y6HifpVnIa1AHHsiy\"},\"4720bb8d2c3e314e1541566330d480c76e4ea07e\":{\"key\":\"/2L0c2F1odzg9kCAa8JJuI1u5WsgVpt8wR5tSyJ0zvPl7IuXVYUpS4Kprmv0jjQc\",\"nonce\":\"qp6ZvUdsZekX/HOEg9F82a1obC5WJzDe\"},\"30eada0533b18d724e2c9f7a6c41edb0af786464\":{\"key\":\"DbjYVVmxxvvaoJvt002a1H3xeQV0AiUJsNbOmFzPMyf8ojrQY2ElhAeMwi5pYAPJ\",\"nonce\":\"7pvCK04aNdg+5YmusaktjaJJaNNagNbw\"},\"ede64dbe5b9ef8f96cdc59fd1c34d96ad070e3ea\":{\"key\":\"LJ2szPtVg7QF0EoBU6c47xDQrbs03BXfGv+kgt4EE/CDZiplLKmX8/c+1dEBYpTI\",\"nonce\":\"oB+hIQQRjq2lOba43FvUkXTlHEvRcIqt\"},\"d50fbacb773130fc39b7167cdae94f54cf19619d\":{\"key\":\"md4uFS4UASnZUgt2TJEPQcatcRXl7/LYfr9lGeSsAMLGmYBswOeBl5/5/bpjqJwk\",\"nonce\":\"guJGn5BLH5ex4nRwqmU+l7BkUMj5GvfY\"}},\"hdPathString\":\"m/0'/0'/0'\",\"salt\":\"golden-fixed-salt-1\",\"hdIndex\":5,\"version\":3}",
     "decryptedSeed": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
     "hdIndexAfter": 5
   },
@@ -46,20 +46,20 @@
     {
       "name": "eth-transfer",
       "from": "0x339bc745c15d75126aba96243ea35271a5f568bf",
-      "rawUnsigned": "0xe4808504a817c80082520894000000000000000000000000000000000000000101801c8080",
-      "rawSigned": "f864808504a817c80082520894000000000000000000000000000000000000000101801ba05e884d3c146ca65b8bd55dc06e10d16713e5c58a0df029aa38feb028bd1dfcb0a01df3361402af7f897afb0f9e12a5a55fb21b35e308deb4ba9f4b08ed42fe3718"
+      "rawUnsigned": "0xe4808504a817c80082520894100000000000000000000000000000000000000101801c8080",
+      "rawSigned": "f864808504a817c80082520894100000000000000000000000000000000000000101801ba0ea70e64e7dee54bdfddf7883bf553c411442f60df67a69fa2470226f6db5c78ca0779fcfde36c50a41bd59f74bb54fc46777114823432871f1d6386551b39c914f"
     },
     {
       "name": "eth-transfer-larger",
       "from": "0x339bc745c15d75126aba96243ea35271a5f568bf",
-      "rawUnsigned": "0xec01850ba43b7400825208940000000000000000000000000000000000000002880de0b6b3a7640000801c8080",
-      "rawSigned": "f86b01850ba43b7400825208940000000000000000000000000000000000000002880de0b6b3a7640000801ba0df831c9839dc8bf2d876667da9abd5deed11fe577a48ea3efd2411bd3d5f9dc99f0dc5035416574158cdd6959747154ff34476e83d21e759ed20b35f00511191"
+      "rawUnsigned": "0xec01850ba43b7400825208941000000000000000000000000000000000000002880de0b6b3a7640000801c8080",
+      "rawSigned": "f86c01850ba43b7400825208941000000000000000000000000000000000000002880de0b6b3a7640000801ca0b1ee82f7397a20605e833cdc7ca139305bb70917468c64974892e5b1a2a67bfda0634472e42664804ab88f22d8ca12f949f2e89ec417d1990510e4cb0ad3159203"
     },
     {
       "name": "eth-transfer-higher-nonce",
       "from": "0x339bc745c15d75126aba96243ea35271a5f568bf",
-      "rawUnsigned": "0xec2a8504a817c80082520894000000000000000000000000000000000000000388016345785d8a0000801c8080",
-      "rawSigned": "f86c2a8504a817c80082520894000000000000000000000000000000000000000388016345785d8a0000801ba0df431925b0107ca110ffde6c2af63ff25efaaa941f25c997a4714507136485eea03c161c9f096e665c14416a9b87d3685813796edb1dc9349ea1792f0fdb31480e"
+      "rawUnsigned": "0xec2a8504a817c80082520894100000000000000000000000000000000000000388016345785d8a0000801c8080",
+      "rawSigned": "f86c2a8504a817c80082520894100000000000000000000000000000000000000388016345785d8a0000801ba0b3221563f1fdf75796b00eadba7586962ecd0afc676000dce44a27fc2f6b232fa060b457e11db48cbf9847a0a49336c2b4b3fdb1ba2ae8aaa0c71765ead309851e"
     }
   ],
   "roundTripAddresses": [
