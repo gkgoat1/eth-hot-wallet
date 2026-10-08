@@ -4,8 +4,7 @@ blockExoticSubdeps: false
 overrides:
   # web3@0.20.7 depends on this git fork of bignumber.js; pin to the
   # equivalent npm release so pnpm can resolve it reproducibly.
-  "bignumber.js@git+https://github.com/frozeman/bignumber.js-nolookahead.git":
-    9.0.1
+  "bignumber.js@git+https://github.com/frozeman/bignumber.js-nolookahead.git": 9.0.1
 # pnpm 11 build-script policy: true = allowed to run postinstall,
 # false = explicitly blocked (silences ERR_PNPM_IGNORED_BUILDS).
 allowBuilds:
@@ -24,3 +23,6 @@ allowBuilds:
   secp256k1: true
   spawn-sync: true
   uglifyjs-webpack-plugin: false
+minimumReleaseAgeExclude:
+  - ox@0.14.54
+  - viem@2.57.4

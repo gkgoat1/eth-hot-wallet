@@ -12,7 +12,7 @@ export default tseslint.config(
       'node_modules/**',
       'build/**',
       'coverage/**',
-      'dist/**',
+      '**/dist/**',
       'app/**',
       'internals/**',
       'server/**',
@@ -20,6 +20,15 @@ export default tseslint.config(
       'docs/**',
       '**/*.min.js',
     ],
+  },
+  // Test files use createRequire() to load the CJS keystore libs under test
+  // (eth-lightwallet / eth-lightwallet-next) — intentional interop, so the
+  // require-imports ban is relaxed there.
+  {
+    files: ['test/**/*.ts', 'packages/**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
