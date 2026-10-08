@@ -41,14 +41,20 @@ function loadGolden(file: string): Golden {
 // (they were proven byte-equivalent at generation time).
 const GOLDEN_FILES = ['vault-3.0.1.json', 'vault-4.0.0.json'];
 
+// This file tests the legacy npm eth-lightwallet@3.0.1. The modernized Git
+// dep (eth-lightwallet-next) is tested in keystore-next.test.ts — kept in a
+// separate file because bitcore-lib's versionGuard throws if two instances
+// load in one module graph (vitest isolates files into workers).
 const lw = require('eth-lightwallet');
-const { keystore, signing } = lw;
+
+type Lw = { keystore: any; signing: any };
+const LIB: Lw = { keystore: lw.keystore, signing: lw.signing };
 
 const to0x = (a: string) => (a.startsWith('0x') ? a : `0x${a}`);
 
-function createVault(input: Golden['vault']['input']): Promise<any> {
+function createVault(lw: Lw, input: Golden['vault']['input']): Promise<any> {
   return new Promise((res, rej) =>
-    keystore.createVault(
+    lw.keystore.createVault(
       {
         password: input.password,
         seedPhrase: input.mnemonic,
@@ -60,60 +66,66 @@ function createVault(input: Golden['vault']['input']): Promise<any> {
   );
 }
 
-function deriveKey(ks: any, password: string, salt: string): Promise<Uint8Array> {
+function deriveKey(lw: Lw, ks: any, password: string, salt: string): Promise<Uint8Array> {
   return new Promise((res, rej) => {
     if (typeof ks.keyFromPassword === 'function') {
       ks.keyFromPassword(password, (err: unknown, k: Uint8Array) => (err ? rej(err) : res(k)));
     } else {
-      keystore.deriveKeyFromPasswordAndSalt(password, salt, (err: unknown, k: Uint8Array) =>
-        err ? rej(err) : res(k),
+      lw.keystore.deriveKeyFromPasswordAndSalt(
+        password,
+        salt,
+        (err: unknown, k: Uint8Array) => (err ? rej(err) : res(k)),
       );
     }
   });
 }
 
-describe.each(GOLDEN_FILES)('golden %s', (file) => {
-  const golden = loadGolden(file);
+describe('eth-lightwallet@3.0.1 (npm)', () => {
+  const lw = LIB;
 
-  it('reproduces the scrypt pwDerivedKey', async () => {
-    const ks = await createVault(golden.vault.input);
-    const key = await deriveKey(ks, golden.kdf.password, golden.kdf.salt);
-    expect(Buffer.from(key).toString('hex')).toBe(golden.kdf.pwDerivedKeyHex);
-  });
+  describe.each(GOLDEN_FILES)('golden %s', (file) => {
+    const golden = loadGolden(file);
 
-  it('reproduces the first five addresses and private keys', async () => {
-    const ks = await createVault(golden.vault.input);
-    const key = await deriveKey(ks, golden.kdf.password, golden.kdf.salt);
-    ks.generateNewAddress(key, 5);
-    expect(ks.getAddresses().map(to0x)).toEqual(golden.firstFiveAddresses);
-    const priv = ks.getAddresses().map((a: string) => ks.exportPrivateKey(a, key));
-    expect(priv).toEqual(golden.firstFivePrivateKeys);
-  });
+    it('reproduces the scrypt pwDerivedKey', async () => {
+      const ks = await createVault(lw, golden.vault.input);
+      const key = await deriveKey(lw, ks, golden.kdf.password, golden.kdf.salt);
+      expect(Buffer.from(key).toString('hex')).toBe(golden.kdf.pwDerivedKeyHex);
+    });
 
-  it('reproduces signed legacy txs byte-for-byte', async () => {
-    const ks = await createVault(golden.vault.input);
-    const key = await deriveKey(ks, golden.kdf.password, golden.kdf.salt);
-    ks.generateNewAddress(key, 5);
-    for (const t of golden.signedLegacyTxs) {
-      const signed = signing.signTx(ks, key, t.rawUnsigned, t.from);
-      expect(`0x${signed.replace(/^0x/, '')}`).toBe(`0x${t.rawSigned.replace(/^0x/, '')}`);
-    }
-  });
+    it('reproduces the first five addresses and private keys', async () => {
+      const ks = await createVault(lw, golden.vault.input);
+      const key = await deriveKey(lw, ks, golden.kdf.password, golden.kdf.salt);
+      ks.generateNewAddress(key, 5);
+      expect(ks.getAddresses().map(to0x)).toEqual(golden.firstFiveAddresses);
+      const priv = ks.getAddresses().map((a: string) => ks.exportPrivateKey(a, key));
+      expect(priv).toEqual(golden.firstFivePrivateKeys);
+    });
 
-  it('deserialize(serialize) round-trips the address set', async () => {
-    const ks = await createVault(golden.vault.input);
-    const key = await deriveKey(ks, golden.kdf.password, golden.kdf.salt);
-    ks.generateNewAddress(key, 5);
-    const rehydrated = keystore.deserialize(ks.serialize());
-    expect(rehydrated.getAddresses().map(to0x)).toEqual(golden.roundTripAddresses);
-  });
+    it('reproduces signed legacy txs byte-for-byte', async () => {
+      const ks = await createVault(lw, golden.vault.input);
+      const key = await deriveKey(lw, ks, golden.kdf.password, golden.kdf.salt);
+      ks.generateNewAddress(key, 5);
+      for (const t of golden.signedLegacyTxs) {
+        const signed = lw.signing.signTx(ks, key, t.rawUnsigned, t.from);
+        expect(`0x${signed.replace(/^0x/, '')}`).toBe(`0x${t.rawSigned.replace(/^0x/, '')}`);
+      }
+    });
 
-  it('decrypts a vault serialized by the reference implementation', async () => {
-    // Forward-compat: the recorded serialized vault (nonce-random ciphertext
-    // from the reference lib) must decrypt under the lib under test.
-    const rehydrated = keystore.deserialize(golden.vault.serialized);
-    const key = await deriveKey(rehydrated, golden.kdf.password, golden.kdf.salt);
-    const seed = rehydrated.getSeed(key);
-    expect(seed).toBe(golden.vault.input.mnemonic);
+    it('deserialize(serialize) round-trips the address set', async () => {
+      const ks = await createVault(lw, golden.vault.input);
+      const key = await deriveKey(lw, ks, golden.kdf.password, golden.kdf.salt);
+      ks.generateNewAddress(key, 5);
+      const rehydrated = lw.keystore.deserialize(ks.serialize());
+      expect(rehydrated.getAddresses().map(to0x)).toEqual(golden.roundTripAddresses);
+    });
+
+    it('decrypts a vault serialized by the reference implementation', async () => {
+      // Forward-compat: the recorded serialized vault (nonce-random ciphertext
+      // from the reference lib) must decrypt under the lib under test.
+      const rehydrated = lw.keystore.deserialize(golden.vault.serialized);
+      const key = await deriveKey(lw, rehydrated, golden.kdf.password, golden.kdf.salt);
+      const seed = rehydrated.getSeed(key);
+      expect(seed).toBe(golden.vault.input.mnemonic);
+    });
   });
 });
