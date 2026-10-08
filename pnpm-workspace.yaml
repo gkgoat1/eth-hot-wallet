@@ -1,0 +1,25 @@
+packages:
+  - packages/*
+allowBuilds:
+  core-js: set this to true or false
+  ejs: set this to true or false
+  es5-ext: set this to true or false
+  fsevents: set this to true or false
+  gifsicle: set this to true or false
+  jpegtran-bin: set this to true or false
+  keccak: set this to true or false
+  lint-staged: set this to true or false
+  ngrok: set this to true or false
+  optipng-bin: set this to true or false
+  pngquant-bin: set this to true or false
+  secp256k1: set this to true or false
+  spawn-sync: set this to true or false
+  uglifyjs-webpack-plugin: set this to true or false
+blockExoticSubdeps: false
+onlyBuiltDependencies:
+  - core-js
+  - es5-ext
+  - fsevents
+  - keccak
+  - secp256k1
+  - spawn-sync
