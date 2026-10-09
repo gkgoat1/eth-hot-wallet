@@ -1,7 +1,8 @@
-import { injectGlobal } from 'styled-components';
+// styled-components v6: injectGlobal was removed; use createGlobalStyle and
+// render the component once at the app root.
+import { createGlobalStyle } from 'styled-components';
 
-/* eslint no-unused-expressions: 0 */
-injectGlobal`
+export const GlobalStyle = createGlobalStyle`
   html,
   body {
     height: 100%;

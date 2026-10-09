@@ -113,8 +113,8 @@ importers:
         specifier: ^2.0.12
         version: 2.0.12
       styled-components:
-        specifier: ^2.0.0
-        version: 2.4.1(react@18.3.1)
+        specifier: ^6.5.3
+        version: 6.5.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       warning:
         specifier: ^3.0.0
         version: 3.0.0
@@ -169,7 +169,7 @@ importers:
         version: 2.0.2
       babel-plugin-styled-components:
         specifier: 1.10.7
-        version: 1.10.7(styled-components@2.4.1(react@18.3.1))
+        version: 1.10.7(styled-components@6.5.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       babel-plugin-transform-es2015-modules-commonjs:
         specifier: 6.26.2
         version: 6.26.2
@@ -468,6 +468,12 @@ packages:
   '@csstools/css-tokenizer@4.0.2':
     resolution: {integrity: sha512-OoKoR0f76dCY666JlcbhmVTs2drYj1GUXZTYTcbUgJjh9Nv41aFfZ21bPQTERm5+L5cBDo466NltB2lplS5GBw==}
     engines: {node: '>=20.19.0'}
+
+  '@emotion/is-prop-valid@1.4.0':
+    resolution: {integrity: sha512-QgD4fyscGcbbKwJmqNvUMSE02OsHUa+lAWKdEUIJKgqe5IwRSKd7+KhibEWdaKwgjLj0DRSHA9biAIqGBk05lw==}
+
+  '@emotion/memoize@0.9.0':
+    resolution: {integrity: sha512-30FAj7/EoJ5mwVPOWhAyCX+FPfMDrVecJAM+Iw9NRoSl4BBAQeqj4cApHHUXOVvIPgLVDsCFoz/hGD+5QQD1GQ==}
 
   '@esbuild/aix-ppc64@0.25.12':
     resolution: {integrity: sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA==}
@@ -2390,9 +2396,6 @@ packages:
     resolution: {integrity: sha512-FxAv7HpHrXbh3aPo4o2qxHay2lkLY3x5Mw3KeE4KQE8ysVfziWeRZDwcjauvwBSGEC/nXUPzZy8zeh4HokqOnw==}
     engines: {node: '>=4'}
 
-  camelize@1.0.1:
-    resolution: {integrity: sha512-dU+Tx2fsypxTgtLoE36npi3UqcjSSMNYfkqgmoEhtZrraP5VWq0K7FkWVTYa8eMPtnU/G2txVsfdCJTn9uzpuQ==}
-
   caniuse-api@1.6.1:
     resolution: {integrity: sha512-SBTl70K0PkDUIebbkXrxWqZlHNs0wRgRD6QZ8guctShjbh63gEPfF+Wj0Yw+75f5Y8tSzqAI/NcisYv/cCah2Q==}
 
@@ -2745,10 +2748,6 @@ packages:
   css-animation@1.6.1:
     resolution: {integrity: sha512-/48+/BaEaHRY6kNQ2OIPzKf9A6g8WjZYjhiNDNuIVbsm5tXCGIAsHDjB4Xu1C4vXJtUWZo26O68OQkDpNBaPog==}
 
-  css-color-keywords@1.0.0:
-    resolution: {integrity: sha512-FyyrDHZKEjXDpNJYvVsV960FiqQyXc/LlYmsxl2BcdMb2WPx0OGRVgTg55rPSyLSNMqP52R9r8geSp7apN3Ofg==}
-    engines: {node: '>=4'}
-
   css-color-names@0.0.4:
     resolution: {integrity: sha512-zj5D7X1U2h2zsXOAM8EyUREBnnts6H+Jm+d1M2DbiQQcUtnqgQsMrdo8JW9R80YFUmIdBZeMu5wvYM7hcgWP/Q==}
 
@@ -2764,9 +2763,6 @@ packages:
 
   css-selector-tokenizer@0.7.3:
     resolution: {integrity: sha512-jWQv3oCEL5kMErj4wRnK/OPoBi0D+P1FR2cDCKYPaMeD2eW3/mttav8HT4hT1CKopiJI/psEULjkClhvJo4Lvg==}
-
-  css-to-react-native@2.3.2:
-    resolution: {integrity: sha512-VOFaeZA053BqvvvqIA8c9n0+9vFppVBAHCp6JgFTtTMU3Mzi+XnelJ9XC9ul3BqFzZyQ5N+H0SnwsWT2Ebchxw==}
 
   css-tree@3.2.1:
     resolution: {integrity: sha512-X7sjQzceUhu1u7Y/ylrRZFU2FS6LRiFVp6rKLPg23y3x3c3DOKAwuXGDp+PAGjh6CSnCjYeAul8pcT8bAl+lSA==}
@@ -4080,9 +4076,6 @@ packages:
     resolution: {integrity: sha512-V6Yw1rIcYV/4JsnggjBU0l4Kr+EXhpwqXRusENU1Xx6ro00IHPHYNynCuBTOZAPlr3AAmLvchH9I7N/VUdvOwQ==}
     engines: {node: '>=0.10.40'}
     deprecated: This version has been deprecated in accordance with the hapi support policy (hapi.im/support). Please upgrade to the latest version to get the best features, bug fixes, and security patches. If you are unable to upgrade at this time, paid support is available for older versions (hapi.im/commercial).
-
-  hoist-non-react-statics@1.2.0:
-    resolution: {integrity: sha512-r8huvKK+m+VraiRipdZYc+U4XW43j6OFG/oIafe7GfDbRpCduRoX9JI/DRxqgtBSCeL+et6N6ibZoedHS2NyOQ==}
 
   hoist-non-react-statics@2.5.5:
     resolution: {integrity: sha512-rqcy4pJo55FTTLWt+bU8ukscqHeE/e9KWvsOW2b/a3afxQZhwkQdT1rPPCJ0rYXdj4vNcasY8zHTH+jF/qStxw==}
@@ -7096,13 +7089,24 @@ packages:
     resolution: {integrity: sha512-5Dk5DkutC4pBNf/Fepuvu8iqzzNZHjS/mZ/9bqGI2CQeWdzrU/opap1qfp5hJfQ3yg7OCEvAyHRUnsf0i7FjmQ==}
     engines: {node: '>= 0.12.0'}
 
-  styled-components@2.4.1:
-    resolution: {integrity: sha512-dO0MpONBmVfjA/DSdpcLYObQZcbM+ZXoBOx5ytk4ZmUuyo3JG7QFMvHQEIvVRL1Uogf6x0DI9XWve6pyW9TTiA==}
+  styled-components@6.5.3:
+    resolution: {integrity: sha512-vAX79sfpmUerP9fsTTxoTrBDE0RuO4ahjInyWYoohNgqrdg63Ms4q6FJ/o2Fyity82NU3cujOT8Ewl9TThBdwg==}
+    engines: {node: '>= 16'}
     peerDependencies:
-      react: '>= 0.14.0 < 17.0.0-0'
+      css-to-react-native: '>= 3.2.0'
+      react: '>= 16.8.0'
+      react-dom: '>= 16.8.0'
+      react-native: '>= 0.68.0'
+    peerDependenciesMeta:
+      css-to-react-native:
+        optional: true
+      react-dom:
+        optional: true
+      react-native:
+        optional: true
 
-  stylis@3.5.4:
-    resolution: {integrity: sha512-8/3pSmthWM7lsPBKv7NXkzn2Uc9W7NotcwGNpJaa3k7WMM1XDCA4MgT5k/8BIexd5ydZdboXtU90XH9Ec4Bv/Q==}
+  stylis@4.3.6:
+    resolution: {integrity: sha512-yQ3rwFWRfwNUY7H5vpU0wfdkNSnvnJinhF9830Swlaxl03zsOjCfmX0ugac+3LtK0lYSgwL/KXc8oYL3mG4YFQ==}
 
   sum-up@1.0.3:
     resolution: {integrity: sha512-zw5P8gnhiqokJUWRdR6F4kIIIke0+ubQSGyYUY506GCbJWtV7F6Xuy0j6S125eSX2oF+a8KdivsZ8PlVEH0Mcw==}
@@ -8148,6 +8152,12 @@ snapshots:
       css-tree: 3.2.1
 
   '@csstools/css-tokenizer@4.0.2': {}
+
+  '@emotion/is-prop-valid@1.4.0':
+    dependencies:
+      '@emotion/memoize': 0.9.0
+
+  '@emotion/memoize@0.9.0': {}
 
   '@esbuild/aix-ppc64@0.25.12':
     optional: true
@@ -9457,13 +9467,13 @@ snapshots:
     dependencies:
       lodash: 4.18.1
 
-  babel-plugin-styled-components@1.10.7(styled-components@2.4.1(react@18.3.1)):
+  babel-plugin-styled-components@1.10.7(styled-components@6.5.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       '@babel/helper-annotate-as-pure': 7.29.7
       '@babel/helper-module-imports': 7.29.7
       babel-plugin-syntax-jsx: 6.18.0
       lodash: 4.18.1
-      styled-components: 2.4.1(react@18.3.1)
+      styled-components: 6.5.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -10231,8 +10241,6 @@ snapshots:
 
   camelcase@4.1.0: {}
 
-  camelize@1.0.1: {}
-
   caniuse-api@1.6.1:
     dependencies:
       browserslist: 1.7.7
@@ -10698,8 +10706,6 @@ snapshots:
       babel-runtime: 6.26.0
       component-classes: 1.2.6
 
-  css-color-keywords@1.0.0: {}
-
   css-color-names@0.0.4: {}
 
   css-loader@0.28.7:
@@ -10738,12 +10744,6 @@ snapshots:
     dependencies:
       cssesc: 3.0.0
       fastparse: 1.1.2
-
-  css-to-react-native@2.3.2:
-    dependencies:
-      camelize: 1.0.1
-      css-color-keywords: 1.0.0
-      postcss-value-parser: 3.3.1
 
   css-tree@3.2.1:
     dependencies:
@@ -12527,8 +12527,6 @@ snapshots:
       minimalistic-crypto-utils: 1.0.1
 
   hoek@2.16.3: {}
-
-  hoist-non-react-statics@1.2.0: {}
 
   hoist-non-react-statics@2.5.5: {}
 
@@ -16286,19 +16284,16 @@ snapshots:
       loader-utils: 1.4.2
       schema-utils: 0.3.0
 
-  styled-components@2.4.1(react@18.3.1):
+  styled-components@6.5.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      buffer: 5.7.1
-      css-to-react-native: 2.3.2
-      fbjs: 0.8.18
-      hoist-non-react-statics: 1.2.0
-      is-plain-object: 2.0.4
-      prop-types: 15.8.1
+      '@emotion/is-prop-valid': 1.4.0
+      csstype: 3.2.3
       react: 18.3.1
-      stylis: 3.5.4
-      supports-color: 3.2.3
+      stylis: 4.3.6
+    optionalDependencies:
+      react-dom: 18.3.1(react@18.3.1)
 
-  stylis@3.5.4: {}
+  stylis@4.3.6: {}
 
   sum-up@1.0.3:
     dependencies:

@@ -251,7 +251,7 @@
     "reselect": "^3.0.1",
     "sanitize.css": "^5.0.0",
     "store": "^2.0.12",
-    "styled-components": "^2.0.0",
+    "styled-components": "^6.5.3",
     "warning": "^3.0.0",
     "web3": "^0.20.7",
     "whatwg-fetch": "^2.0.4"

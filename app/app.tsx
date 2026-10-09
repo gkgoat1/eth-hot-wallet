@@ -5,7 +5,6 @@
  */
 import 'sanitize.css/sanitize.css';
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
@@ -13,7 +12,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from 'containers/App';
 
 import configureStore from './store';
-import './global-styles';
+import { GlobalStyle } from './global-styles';
 
 // Create redux store. Router v6 owns history; the old react-router-redux /
 // ConnectedRouter plumbing is gone.
@@ -27,6 +26,7 @@ const render = () => {
   createRoot(MOUNT_NODE).render(
     <Provider store={store}>
       <BrowserRouter>
+        <GlobalStyle />
         <App />
       </BrowserRouter>
     </Provider>,
