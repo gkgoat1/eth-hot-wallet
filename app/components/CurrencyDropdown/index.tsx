@@ -6,7 +6,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Menu, Dropdown, Icon } from 'antd';
+import { Menu, Dropdown } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 // import styled from 'styled-components';
 const MenuItem = Menu.Item;
 
@@ -17,7 +18,6 @@ const MenuItem = Menu.Item;
 const MenuAny = Menu as any;
 const MenuItemAny = MenuItem as any;
 const DropdownAny = Dropdown as any;
-const IconAny = Icon as any;
 
 // plain JS object: exchange rates keyed by currency pair (ie 'eth_usd')
 interface ExchangeRates {
@@ -51,7 +51,7 @@ function CurrencyDropdown(props: CurrencyDropdownProps) {
   return (
     <DropdownAny overlay={convertToMenu}>
       <span>
-        {convertToSymbol === 'none' ? 'Convert' : `${convertToSymbol}`}<IconAny type="down" />
+        {convertToSymbol === 'none' ? 'Convert' : `${convertToSymbol}`}<DownOutlined />
       </span>
     </DropdownAny>
   );

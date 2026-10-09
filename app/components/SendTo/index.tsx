@@ -6,7 +6,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Input, Icon } from 'antd';
+import { Input } from 'antd';
+import { ContactsOutlined } from '@ant-design/icons';
 // import styled from 'styled-components';
 
 interface SendToProps {
@@ -20,7 +21,6 @@ interface SendToProps {
 // JSX checker. The runtime components are unchanged; these aliases only
 // re-type them.
 const InputAny = Input as any;
-const IconAny = Icon as any;
 
 function SendTo({ to, onChangeTo, locked }: SendToProps) {
   return (
@@ -28,7 +28,7 @@ function SendTo({ to, onChangeTo, locked }: SendToProps) {
       <InputAny
         style={{ width: '300px' }}
         placeholder="Send to address"
-        prefix={<IconAny type="contacts" />}
+        prefix={<ContactsOutlined />}
         value={to}
         onChange={onChangeTo}
         disabled={locked}

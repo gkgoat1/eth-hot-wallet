@@ -8,7 +8,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
-import { Menu as AntdMenu, Button as AntdButton, Dropdown as AntdDropdown, Icon as AntdIcon } from 'antd';
+import { Menu as AntdMenu, Button as AntdButton, Dropdown as AntdDropdown } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 
 // SAFETY: antd 3's bundled .d.ts files resolve 'react' to a hoisted
 // @types/react@19 under pnpm (node_modules/.pnpm/node_modules), whose Component
@@ -18,7 +19,6 @@ import { Menu as AntdMenu, Button as AntdButton, Dropdown as AntdDropdown, Icon 
 // app's React 15 JSX checking.
 const Menu = AntdMenu as unknown as React.ComponentType<any>;
 const Dropdown = AntdDropdown as unknown as React.ComponentType<any>;
-const Icon = AntdIcon as unknown as React.ComponentType<any>;
 // const SubMenu = AntdMenu.SubMenu;
 // const MenuItemGroup = AntdMenu.ItemGroup;
 const MenuItem = AntdMenu.Item;
@@ -62,7 +62,7 @@ function NetworkMenu(props: NetworkMenuProps) {
   return (
     <Dropdown overlay={menu}>
       <StyledButton size="large" icon="wifi">
-        {networkName}<Icon type="down" />
+        {networkName}<DownOutlined />
       </StyledButton>
     </Dropdown>
   );

@@ -7,7 +7,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Modal as AntdModal, Button as AntdButton, Input as AntdInput, Icon as AntdIcon, Tooltip as AntdTooltip } from 'antd';
+import { Modal as AntdModal, Button as AntdButton, Input as AntdInput, Tooltip as AntdTooltip } from 'antd';
+import { CloseCircleFilled, CloseCircleOutlined, KeyOutlined, WalletOutlined } from '@ant-design/icons';
 
 // SAFETY: antd 3's bundled .d.ts files resolve 'react' to a hoisted
 // @types/react@19 under pnpm (node_modules/.pnpm/node_modules), whose Component
@@ -18,7 +19,6 @@ import { Modal as AntdModal, Button as AntdButton, Input as AntdInput, Icon as A
 const Modal = AntdModal as unknown as React.ComponentType<any>;
 const Button = AntdButton as unknown as React.ComponentType<any>;
 const Input = AntdInput as unknown as React.ComponentType<any>;
-const Icon = AntdIcon as unknown as React.ComponentType<any>;
 const Tooltip = AntdTooltip as unknown as React.ComponentType<any>;
 
 const Div = styled.div`
@@ -49,11 +49,11 @@ interface RestoreWalletModalProps {
 
 function RestoreWalletModal(props: RestoreWalletModalProps) {
   const { isShowRestoreWallet, userSeed, userPassword, restoreWalletError, onChangeUserSeed, onChangeUserPassword, onRestoreWalletCancel, onRestoreWalletFromSeed } = props;
-  // const suffix = userSeed ? <Icon type="close-circle" onClick={this.emitEmpty} /> : null;
+  // const suffix = userSeed ? <CloseCircleFilled onClick={this.emitEmpty} /> : null;
   const errorComponent =
     (<Span key="error">
       <Tooltip placement="bottom" title={restoreWalletError}>
-        <Icon type="close-circle-o" style={{ color: 'red' }} />
+        <CloseCircleOutlined style={{ color: 'red' }} />
       </Tooltip>
     </Span>);
 
@@ -73,7 +73,7 @@ function RestoreWalletModal(props: RestoreWalletModalProps) {
       <Description> {"HDPathString m/44'/60'/0'/0 is used for address generation"}</Description>
       <Input
         placeholder="Enter seed"
-        prefix={<Icon type="wallet" />}
+        prefix={<WalletOutlined />}
         value={userSeed}
         onChange={onChangeUserSeed}
         autoComplete="off"
@@ -84,7 +84,7 @@ function RestoreWalletModal(props: RestoreWalletModalProps) {
       <Div>
         <Input
           placeholder="Enter password for keystore encryption"
-          prefix={<Icon type="key" />}
+          prefix={<KeyOutlined />}
           value={userPassword}
           onChange={onChangeUserPassword}
           autoComplete="off"

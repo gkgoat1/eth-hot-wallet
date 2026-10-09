@@ -109,13 +109,13 @@ function getErrorMessage(err: unknown): string {
 * askFaucetApi() will get costant Tx as success
 */
 const online = true;
-if (!online) message.warn('Debug mode: online = false in Header/saga.js');
+if (!online) message.warning('Debug mode: online = false in Header/saga.js');
 /**
  * connect to rpc and attach keystore as siger provider
  */
 export function* loadNetwork(action: LoadNetworkAction): Generator {
   if (!online) {
-    message.warn('debug mode: online = false in Header/saga.js');
+    message.warning('debug mode: online = false in Header/saga.js');
   }
   try {
     const rpcAddress = online ? Network[action.networkName].rpc : Network['Local RPC'].rpc;

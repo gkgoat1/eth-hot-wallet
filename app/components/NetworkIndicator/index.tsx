@@ -9,7 +9,8 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 // import { FormattedMessage } from 'react-intl';
-import { Icon, Tooltip } from 'antd';
+import { Tooltip } from 'antd';
+import { CloseCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 
 // import messages from './messages';
 import { offlineModeString } from 'utils/constants';
@@ -24,7 +25,6 @@ const Span = styled.span`
 // JSX checker. The runtime components are unchanged; these aliases only
 // re-type them.
 const SpanAny = Span as any;
-const IconAny = Icon as any;
 const TooltipAny = Tooltip as any;
 
 interface NetworkIndicatorProps {
@@ -36,7 +36,7 @@ function NetworkIndicator(props: NetworkIndicatorProps) {
   const { loading, error } = props;
   let component = null;
   if (loading) {
-    component = <IconAny type="loading" />;
+    component = <LoadingOutlined />;
   }
   if (error && error !== offlineModeString) {
     // SAFETY: antd 3's `title` is typed against @types/react@19's ReactNode;
@@ -45,7 +45,7 @@ function NetworkIndicator(props: NetworkIndicatorProps) {
     const errorTitle = error as any;
     component =
       (<TooltipAny placement="bottom" title={errorTitle}>
-        <IconAny type="close-circle-o" style={{ color: 'red' }} />
+        <CloseCircleOutlined style={{ color: 'red' }} />
       </TooltipAny>);
   }
 

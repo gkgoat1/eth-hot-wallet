@@ -4,16 +4,16 @@
  *
  */
 import React from 'react';
-import { message, Button as AntdButton, notification as antdNotification, Icon as AntdIcon } from 'antd';
+import { message, Button as AntdButton, notification as antdNotification } from 'antd';
 import FaucetDescription from 'components/FaucetDescription';
 import { offlineModeString } from 'utils/constants';
+import { BulbOutlined, LoadingOutlined } from '@ant-design/icons';
 
 // SAFETY: antd 3's bundled .d.ts files resolve 'react' to a hoisted
 // @types/react@19 under pnpm, whose ReactNode/Component types are incompatible
 // with @types/react@15's JSX/ElementClass checking used by this app. Runtime
 // behavior is unchanged; these aliases only re-type the statics for React 15.
 const Button = AntdButton as unknown as React.ComponentType<any>;
-const Icon = AntdIcon as unknown as React.ComponentType<any>;
 const notification = antdNotification as unknown as {
   open: (config: { [key: string]: any }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   info: (config: { [key: string]: any }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -311,10 +311,7 @@ export function checkFaucetSuccess(): CheckFaucetSuccessAction {
   notification.config({
     placement: 'bottomRight',
   });
-  const icon = React.createElement(
-    Icon,
-    { type: 'bulb', style: { color: '#108ee9' } }
-  );
+  const icon = React.createElement(BulbOutlined, { style: { color: '#108ee9' } });
   notification.open({
     message: 'Ropsten Testnet faucet',
     description: 'Need some coins for testing?',
@@ -348,7 +345,7 @@ export function checkFaucetError(error: any): CheckFaucetErrorAction { // eslint
  * @return {object}    An action object with a type of ASK_FAUCET
  */
 export function askFaucet(): AskFaucetAction {
-  const icon = React.createElement(Icon, { type: 'loading' });
+  const icon = React.createElement(LoadingOutlined);
   notification.info({
     message: 'Sending request',
     description: 'Please wait',
