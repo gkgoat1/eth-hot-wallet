@@ -5,6 +5,10 @@ overrides:
   # web3@0.20.7 depends on this git fork of bignumber.js; pin to the
   # equivalent npm release so pnpm can resolve it reproducibly.
   "bignumber.js@git+https://github.com/frozeman/bignumber.js-nolookahead.git": 9.0.1
+  # Pin all @types/react to 18 (antd@3 pulls @types/react@19 via react-slick,
+  # and 15/18/19 coexisting breaks JSX element-type assignability).
+  "@types/react": "18.3.31"
+  "@types/react-dom": "18.3.7"
 # pnpm 11 build-script policy: true = allowed to run postinstall,
 # false = explicitly blocked (silences ERR_PNPM_IGNORED_BUILDS).
 allowBuilds:
@@ -26,8 +30,6 @@ allowBuilds:
   # eth-lightwallet-next git dep (published as @gkgo/eth-lightwallet): allow
   # its prepare (npm run build) to build dist/ on install.
   "@gkgo/eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/8e263dda7064d3576eaad700e9ea13b662ce809f": true
-  eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/83c6e57c73d8524528100665dfeb39e5d52a7f99: set this to true or false
-  '@gkgo/eth-lightwallet@https://codeload.github.com/gkgoat1/eth-lightwallet/tar.gz/ccef22fa5d947bc7a886eb19f702851af6b03985': set this to true or false
 minimumReleaseAgeExclude:
   - ox@0.14.54
   - viem@2.57.4

@@ -1,63 +1,41 @@
 /**
  * Create the store with dynamic reducers.
- * (react-router-redux / immutable retained; framework swap is Phase 6.)
+ *
+ * Phase 6: React Router v6 owns routing/history, so react-router-redux and its
+ * routerMiddleware are removed. Redux Toolkit's configureStore replaces the
+ * redux@3 createStore + compose plumbing. Immutable/redux-immutable state is
+ * retained for now (dropping it is the dedicated immutable-removal step).
  */
-import { createStore, applyMiddleware, compose, type Store, type Middleware } from 'redux';
+import { configureStore, type Store } from '@reduxjs/toolkit';
 import { fromJS } from 'immutable';
-// SAFETY: react-router-redux@5.0.0-alpha.9 bundles no type declarations, so
-// TS7016 is suppressed on the import; routerMiddleware is re-typed at the
-// explicit binding below.
-// @ts-expect-error TS7016: react-router-redux ships no type declarations
-import { routerMiddleware as routerMiddlewareUntyped } from 'react-router-redux';
 import createSagaMiddleware from 'redux-saga';
 import createReducer from './reducers';
 import type { InjectableStore } from './utils/checkStore';
 
 const sagaMiddleware = createSagaMiddleware();
 
-// Explicitly typed binding over the untyped module import above.
-const routerMiddleware: (history: unknown) => Middleware = routerMiddlewareUntyped;
+export type AppStore = Store & InjectableStore;
 
-declare global {
-  interface Window {
-    __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof compose;
-  }
-}
+export default function configureAppStore(initialState = {}): AppStore {
+  const store = configureStore({
+    reducer: createReducer() as never,
+    preloadedState: fromJS(initialState) as never,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        // The app stores non-serializable values (keystore instances, BigNumber)
+        // and Immutable state, so RTK's default dev checks don't apply.
+        serializableCheck: false,
+        immutableCheck: false,
+      }).concat(sagaMiddleware),
+  });
 
-export default function configureStore(
-  initialState = {},
-  history: unknown,
-): Store<unknown> & InjectableStore {
-  const middlewares = [sagaMiddleware, routerMiddleware(history)];
+  // Extensions (reducer/saga injectors). SAFETY: configureStore returns a full
+  // redux Store (with Symbol.observable); the injector fields are attached
+  // below at runtime, so the combined type is the real shape.
+  const injectable = store as Store as AppStore;
+  injectable.runSaga = sagaMiddleware.run as never;
+  injectable.injectedReducers = {};
+  injectable.injectedSagas = {};
 
-  const enhancers = [applyMiddleware(...middlewares)];
-
-  // If Redux DevTools Extension is installed use it, otherwise Redux compose
-  const composeEnhancers =
-    process.env.NODE_ENV !== 'production' &&
-    typeof window === 'object' &&
-    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
-      ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
-          // Prevent recomputing reducers for `replaceReducer`
-          shouldHotReload: false,
-        } as never)
-      : compose;
-
-  const store = createStore(
-    createReducer(),
-    fromJS(initialState) as never,
-    composeEnhancers(...enhancers) as never,
-  // SAFETY: createStore's typed Store lacks the injector fields (runSaga,
-  // injectedReducers, injectedSagas) that the legacy injectors attach at
-  // runtime; the app relies on them being present. The double assertion is
-  // the minimal bridge until the Phase 6 redux-toolkit rewrite types the
-  // store properly.
-  ) as unknown as Store<unknown> & InjectableStore;
-
-  // Extensions
-  store.runSaga = sagaMiddleware.run as never;
-  store.injectedReducers = {};
-  store.injectedSagas = {};
-
-  return store;
+  return injectable;
 }

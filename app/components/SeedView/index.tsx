@@ -23,7 +23,9 @@ function SeedView({ loading, error, seed, password, onGenerateKeystore }: SeedVi
   }
 
   if (error !== false) {
-    return <div> Error: {error} </div>;
+    // React 18 types: a bare object isn't a valid ReactNode; render objects as JSON.
+    const errorText = typeof error === 'object' ? JSON.stringify(error) : error;
+    return <div> Error: {errorText} </div>;
   }
 
   if (seed !== false) {

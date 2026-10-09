@@ -11,8 +11,6 @@ import Loadable from 'react-loadable';
 import LoadingIndicator from 'components/LoadingIndicator';
 
 export default Loadable({
-  // @ts-expect-error ./index is still a .jsx module without type declarations;
-  // webpack resolves the dynamic import at runtime.
   loader: () => import('./index'),
   loading: LoadingIndicator,
 });

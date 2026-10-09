@@ -20,7 +20,9 @@ function AddressListStatus({ addressListLoading, addressListError, addressListMs
   }
 
   if (addressListError !== false) {
-    return <div> {addressListError} </div>;
+    // React 18 types: a bare object isn't a valid ReactNode; render objects as JSON.
+    const errorText = typeof addressListError === 'object' ? JSON.stringify(addressListError) : addressListError;
+    return <div> {errorText} </div>;
   }
 
   if (addressListMsg) {

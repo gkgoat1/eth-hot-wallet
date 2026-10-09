@@ -23,7 +23,9 @@ function NetworkLabel(props: NetworkLabelProps) {
   }
 
   if (error !== false) {
-    return <div> {error} </div>;
+    // React 18 types: a bare object isn't a valid ReactNode; render objects as JSON.
+    const errorText = typeof error === 'object' ? JSON.stringify(error) : error;
+    return <div> {errorText} </div>;
   }
 
   // SAFETY: when `error === false` the caller always provides a networkName;

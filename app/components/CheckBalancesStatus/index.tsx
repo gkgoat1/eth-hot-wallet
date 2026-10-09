@@ -21,7 +21,13 @@ function CheckBalancesStatus({ checkingBalanceDoneTime, checkingBalances, checki
   }
 
   if (checkingBalancesError !== false) {
-    return <div> {checkingBalancesError} </div>;
+    // React 18 types: a bare object isn't a valid ReactNode; render objects as
+    // JSON (errors here are message strings or Error-ish objects).
+    const errorText =
+      typeof checkingBalancesError === 'object'
+        ? JSON.stringify(checkingBalancesError)
+        : checkingBalancesError;
+    return <div> {errorText} </div>;
   }
 
   // Regression fix (plan §9a): dropped a literal ' + ' left over from a

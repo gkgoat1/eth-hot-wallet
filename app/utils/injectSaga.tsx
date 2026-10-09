@@ -1,19 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import hoistNonReactStatics from 'hoist-non-react-statics';
+import React, { useEffect, useRef } from 'react';
+import { useStore } from 'react-redux';
 
 import getInjectors from './sagaInjectors';
-
-// SAFETY: hoist-non-react-statics@2's bundled d.ts resolves `react` through
-// pnpm's fallback store (@types/react@19) while the app compiles against
-// @types/react@15, so its React.ComponentType is structurally incompatible
-// with this app's component classes. At runtime it only copies statics onto
-// the target component; this binding re-types it against the app's React 15
-// types so both arguments check locally.
-const hoistStatics = hoistNonReactStatics as unknown as (
-  target: React.ComponentType<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
-  source: React.ComponentType<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
-) => React.ComponentType<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+import type { InjectableStore } from './checkStore';
 
 interface InjectSagaArgs {
   key: string;
@@ -22,54 +11,39 @@ interface InjectSagaArgs {
 }
 
 /**
- * Dynamically injects a saga, passes component's props as saga arguments
+ * Dynamically injects a saga, passing the component's props as saga arguments.
  *
- * @param {string} key A key of the saga
- * @param {function} saga A root saga that will be injected
- * @param {string} [mode] By default (constants.RESTART_ON_REMOUNT) the saga will be started on component mount and
- * cancelled with `task.cancel()` on component un-mount for improved performance. Another two options:
- *   - constants.DAEMON—starts the saga on component mount and never cancels it or starts again,
- *   - constants.ONCE_TILL_UNMOUNT—behaves like 'RESTART_ON_REMOUNT' but never runs it again.
- *
+ * Phase 6: rewritten from a legacy-context class HOC (React 15 contextTypes)
+ * to a hooks HOC using react-redux's useStore. Behavior preserved: the saga
+ * is injected on mount and ejected on unmount (RESTART_ON_REMOUNT default;
+ * DAEMON / ONCE_TILL_UNMOUNT modes handled by the injector).
  */
-export default ({ key, saga, mode }: InjectSagaArgs) => (WrappedComponent: React.ComponentType<any>) => {
-  class InjectSaga extends React.Component<any> {
-    static WrappedComponent = WrappedComponent;
-    static contextTypes = {
-      store: PropTypes.object.isRequired,
+export default ({ key, saga, mode }: InjectSagaArgs) =>
+  function WithSaga<P extends object>(WrappedComponent: React.ComponentType<P>) {
+    const InjectSaga = (props: P): React.ReactElement => {
+      // SAFETY: react-redux's typed Store lacks the injector fields
+      // (runSaga/injectedReducers/injectedSagas) the legacy injectors attach
+      // at runtime; InjectableStore is the real shape. Double assertion bridges
+      // until Phase 6 RTK rewrite types the store.
+      const store = useStore() as unknown as InjectableStore;
+      // SAFETY: injectors are a stateless factory over the store; capturing
+      // them once per mount matches the original field-initializer behavior.
+      const injectorsRef = useRef(getInjectors(store));
+      injectorsRef.current = getInjectors(store);
+
+      useEffect(() => {
+        injectorsRef.current.injectSaga(key, { saga, mode }, props);
+        return () => {
+          injectorsRef.current.ejectSaga(key);
+        };
+        // key/saga/mode are static per call site; props mirror the original
+        // (they were read once at mount in componentWillMount).
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [key]);
+
+      return <WrappedComponent {...props} />;
     };
-    static displayName = `withSaga(${(WrappedComponent.displayName || WrappedComponent.name || 'Component')})`;
-
-    // SAFETY: legacy contextTypes above guarantee `store` is present on
-    // context. `declare` keeps the class from emitting a field that would
-    // clobber React's context assignment (ES2022 define-field semantics);
-    // React assigns context in the base constructor, before `injectors`
-    // is first read on mount/unmount.
-    declare context: { store: Parameters<typeof getInjectors>[0] };
-
-    componentWillMount() {
-      const { injectSaga } = this.injectors;
-
-      injectSaga(key, { saga, mode }, this.props);
-    }
-
-    componentWillUnmount() {
-      const { ejectSaga } = this.injectors;
-
-      ejectSaga(key);
-    }
-
-    // getInjectors is a stateless factory over the store (validated per
-    // call), so reading it via a getter is behaviorally identical to the
-    // original field initializer while keeping `declare context` above.
-    get injectors() {
-      return getInjectors(this.context.store);
-    }
-
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
-  }
-
-  return hoistStatics(InjectSaga, WrappedComponent);
-};
+    InjectSaga.displayName = `withSaga(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+    InjectSaga.WrappedComponent = WrappedComponent;
+    return InjectSaga;
+  };

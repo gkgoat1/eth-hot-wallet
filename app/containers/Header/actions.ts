@@ -293,7 +293,8 @@ export function checkFaucetSuccess(): CheckFaucetSuccessAction {
   const ask = () => {
     // to hide notification box
     notification.close(key);
-    store.dispatch(askFaucet());
+    // SAFETY: store.dispatch is redux-5 typed (UnknownAction); AskFaucetAction is a valid flux action at runtime.
+    store.dispatch(askFaucet() as never);
   };
   const btn = [
     React.createElement(
