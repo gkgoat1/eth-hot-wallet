@@ -21,6 +21,18 @@ import {
 
 } from './constants';
 
+// Loose action shape covering every action this reducer handles. Matches the
+// optional fields of the interfaces in ./actions.
+interface SendTokenAction {
+  type: string;
+  address?: string | null;
+  sendTokenSymbol?: string;
+  amount?: number;
+  gasPrice?: number | string;
+  msg?: string;
+  error?: string | boolean | object;
+  tx?: string | boolean;
+}
 
 const initialState = fromJS({
   from: '',
@@ -40,13 +52,13 @@ const initialState = fromJS({
 
 });
 
-function sendTokenReducer(state = initialState, action) {
+function sendTokenReducer(state = initialState, action: SendTokenAction) {
   switch (action.type) {
     case CHANGE_FROM:
       // update values only if provided:
       return state
-        .update('from', (fromValue) => action.address || fromValue)
-        .update('sendTokenSymbol', (sendTokenSymbolValue) => action.sendTokenSymbol || sendTokenSymbolValue);
+        .update('from', (fromValue: string) => action.address || fromValue)
+        .update('sendTokenSymbol', (sendTokenSymbolValue: string) => action.sendTokenSymbol || sendTokenSymbolValue);
     case CHANGE_AMOUNT:
       return state
         .set('amount', action.amount);

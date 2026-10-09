@@ -17,11 +17,19 @@ transform: translate(-50%, -50%);
 
 `;
 
+// SAFETY: styled-components v2's bundled typings and antd 3's bundled types
+// resolve against @types/react 19 in this pnpm layout while app code resolves
+// @types/react 15, so these components fail the React 15 JSX checker. At
+// runtime they are ordinary React 15-compatible components; the casts only
+// re-expose them to the React 15 JSX checker.
+const DivAny = Div as any;
+const SpinAny = Spin as any;
+
 function LoadingIndicator() {
   return (
-    <Div>
-      <Spin size="large" tip="ETH Hot Wallet" />
-    </Div>
+    <DivAny>
+      <SpinAny size="large" tip="ETH Hot Wallet" />
+    </DivAny>
   );
 }
 

@@ -9,9 +9,22 @@ import PropTypes from 'prop-types';
 import { Alert, Button, Spin } from 'antd';
 import styled from 'styled-components';
 
+// SAFETY: antd 3's bundled types resolve against @types/react 19 in this
+// pnpm layout while app code resolves @types/react 15, so every antd class
+// component fails JSX validation with spurious errors. At runtime these are
+// ordinary React 15-compatible components; the casts only re-expose them to
+// the React 15 JSX checker.
+const AlertAny = Alert as any;
+const ButtonAny = Button as any;
+const SpinAny = Spin as any;
+
 const Div = styled.div`
   margin-top: 22px;
 `;
+// SAFETY: styled-components v2 has no bundled types; the installed
+// @types/styled-components resolves against @types/react 19, so styled tags
+// fail the React 15 JSX checker. Runtime behavior is unchanged.
+const DivAny = Div as any;
 
 // import { FormattedMessage } from 'react-intl';
 // import messages from './messages';
@@ -40,49 +53,49 @@ function SendConfirmationView(props: SendConfirmationViewProps) {
        } = props;
   if (comfirmationLoading) {
     return (
-      <Div>
-        <Spin
+      <DivAny>
+        <SpinAny
           spinning
           style={{ position: 'static' }}
           size="large"
           tip="checking transaction...."
         >
           <br />
-        </Spin>
-      </Div>
+        </SpinAny>
+      </DivAny>
     );
   }
 
   if (confirmationError !== false) {
     return (
-      <Div>
-        <Alert
+      <DivAny>
+        <AlertAny
           message="Transaction not created"
           description={confirmationError}
           type="error"
           showIcon
         />
-      </Div>
+      </DivAny>
     );
   }
 
   if (confirmationMsg !== false) {
     return (
-      <Div>
-        <Alert
+      <DivAny>
+        <AlertAny
           message="Transaction is valid"
           description={confirmationMsg}
           type="info"
         />
         <br />
-        <Button icon="to-top" onClick={onSendTransaction} disabled={isSendComfirmationLocked} >
+        <ButtonAny icon="to-top" onClick={onSendTransaction} disabled={isSendComfirmationLocked} >
           {sendError ? 'Try again' : 'Send ETH'}
-        </Button>
+        </ButtonAny>
         {' '}
-        <Button icon="close" onClick={onAbortTransaction} disabled={isSendComfirmationLocked} >
+        <ButtonAny icon="close" onClick={onAbortTransaction} disabled={isSendComfirmationLocked} >
           Back
-        </Button>
-      </Div>
+        </ButtonAny>
+      </DivAny>
     );
   }
 

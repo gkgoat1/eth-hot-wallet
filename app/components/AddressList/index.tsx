@@ -23,7 +23,8 @@ function AddressList({ addressList, onChangeFrom, exchangeRates, convertTo }: Ad
   // console.log(addressList.toJS().map(([address, data]) => (data)));
   // const listObject = addressList.toJS();
   if (addressList) {
-    mainList = addressList.entrySeq().map(([address, data]) => (
+    // addressList is an Immutable.Map of address string -> token data map.
+    mainList = addressList.entrySeq().map(([address, data]: [string, any]) => (
       // if (key ==='lastIndex') return null;
       <AddressItem
         key={`item-${address}`}

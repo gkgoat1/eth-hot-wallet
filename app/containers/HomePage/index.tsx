@@ -12,6 +12,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+// @ts-ignore react-redux 5 has no bundled typings; connect is used untyped (React 15 legacy).
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
@@ -19,12 +20,21 @@ import { createStructuredSelector } from 'reselect';
 /* Components:  */
 import AddressView from 'components/AddressView';
 import SendToken from 'containers/SendToken';
+// TokenChooser is still an untyped .jsx module; the connected component
+// accepts the props spread below.
+// @ts-ignore
 import TokenChooser from 'containers/TokenChooser';
 import GenerateWalletModal from 'components/GenerateWalletModal';
 import RestoreWalletModal from 'components/RestoreWalletModal';
 import SubHeader from 'components/SubHeader';
 import PageFooter from 'components/PageFooter';
-import { Content } from 'components/PageFooter/sticky';
+import { Content as StickyContent } from 'components/PageFooter/sticky';
+
+// SAFETY: styled-components v2's bundled typings resolve 'react' to a hoisted
+// @types/react@19 under pnpm, whose Component type lacks the `refs` member
+// that @types/react@15's JSX.ElementClass requires. The runtime component is
+// unchanged; this alias only re-types it for the app's React 15 JSX checking.
+const Content = StickyContent as unknown as React.ComponentType<any>;
 
 /* Header: */
 import Header from 'containers/Header';
@@ -118,7 +128,8 @@ interface HomePageProps {
   generateKeystoreError?: object | string | boolean;
 
   onGenerateKeystore?: (evt?: HandlerEvent) => void;
-  onGenerateAddress?: (evt?: HandlerEvent) => void;
+  // Always provided by mapDispatchToProps; AddressView requires it.
+  onGenerateAddress: (evt?: HandlerEvent) => void;
   onShowRestoreWallet?: (evt?: HandlerEvent) => void;
 
   isShowRestoreWallet?: boolean;
@@ -130,21 +141,25 @@ interface HomePageProps {
   onRestoreWalletFromSeed?: (evt?: HandlerEvent) => void;
   onRestoreWalletCancel?: (evt?: HandlerEvent) => void;
 
-  onCheckBalances?: (evt?: HandlerEvent) => void;
+  // Always provided by mapDispatchToProps; AddressView requires them.
+  onCheckBalances: (evt?: HandlerEvent) => void;
 
   onLockWallet?: (evt?: HandlerEvent) => void;
   onUnlockWallet?: (evt?: HandlerEvent) => void;
 
   isComfirmed?: boolean;
   addressMap?: boolean | object;
-  tokenDecimalsMap?: boolean | object;
+  // selectors.ts builds a plain object of token symbol -> decimals count.
+  tokenDecimalsMap?: boolean | { [token: string]: number };
 
   isShowSendToken?: boolean;
-  onShowSendToken?: (address: string, tokenSymbol?: string) => void;
+  // Always provided by mapDispatchToProps; AddressView requires it.
+  onShowSendToken: (address: string, tokenSymbol?: string) => void;
   onHideSendToken?: () => void;
 
   isShowTokenChooser?: boolean;
-  onShowTokenChooser?: () => void;
+  // Always provided by mapDispatchToProps; AddressView requires it.
+  onShowTokenChooser: () => void;
   onHideTokenChooser?: () => void;
 
   addressListLoading?: boolean;
@@ -157,9 +172,11 @@ interface HomePageProps {
   checkingBalancesError?: object | string | boolean;
 
   exchangeRates?: object;
-  onSelectCurrency?: (convertTo: string) => void;
+  // Always provided by mapDispatchToProps; AddressView requires it.
+  onSelectCurrency: (convertTo: string) => void;
   convertTo?: string | boolean;
-  onGetExchangeRates?: () => void;
+  // Always provided by mapDispatchToProps; AddressView requires it.
+  onGetExchangeRates: () => void;
   getExchangeRatesDoneTime?: string | boolean;
   getExchangeRatesLoading?: boolean;
   getExchangeRatesError?: object | string | boolean;
@@ -336,7 +353,7 @@ export class HomePage extends React.PureComponent<HomePageProps> { // eslint-dis
   }
 }
 
-HomePage.propTypes = {
+(HomePage as any).propTypes = { // eslint-disable-line @typescript-eslint/no-explicit-any
   onGenerateWallet: PropTypes.func,
   onGenerateWalletCancel: PropTypes.func,
   isShowGenerateWallet: PropTypes.bool,
@@ -520,6 +537,9 @@ export function mapDispatchToProps(dispatch: (action: { type: string }) => void)
   };
 }
 
+// SAFETY: createStructuredSelector's reselect 3 typings infer the store state
+// as `unknown` while the selectors key off ImmutableState; the app state is an
+// Immutable.Map, so the cast only re-aligns the inferred state parameter.
 const mapStateToProps = createStructuredSelector({
   isShowGenerateWallet: makeSelectIsShowGenerateWallet(),
   generateWalletLoading: makeSelectGenerateWalletLoading(),
@@ -563,15 +583,22 @@ const mapStateToProps = createStructuredSelector({
   saveWalletError: makeSelectSaveWalletError(),
   loadWalletLoading: makeSelectLoadWalletLoading(),
   loadWalletError: makeSelectLoadwalletError(),
-});
+} as any) as (state: unknown) => Record<string, unknown>;
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
-const withReducer = injectReducer({ key: 'home', reducer });
+// SAFETY: the reducer keys its action by a concrete union while injectReducer
+// accepts (state: unknown, action: unknown); redux dispatches are dynamically
+// typed at runtime, so the cast only widens the parameter types.
+const withReducer = injectReducer({ key: 'home', reducer: reducer as (state: unknown, action: unknown) => unknown });
 const withSaga = injectSaga({ key: 'home', saga });
 
-export default compose(
+// SAFETY: redux 3 `compose` typings don't track these higher-order component
+// signatures (react-redux is untyped); the runtime composition is unchanged.
+const enhanced = (compose(
   withReducer,
   withSaga,
   withConnect,
-)(HomePage);
+) as (component: React.ComponentType<any>) => React.ComponentType<any>)(HomePage);
+
+export default enhanced;

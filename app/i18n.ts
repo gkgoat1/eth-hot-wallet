@@ -8,7 +8,13 @@
 // import enLocaleData from 'react-intl/locale-data/en';
 
 import { DEFAULT_LOCALE } from './containers/App/constants'; // eslint-disable-line
-import enTranslationMessages from './translations/en.json';
+import enTranslationMessagesJson from './translations/en.json';
+
+// SAFETY: en.json is the placeholder `[]`, so its inferred type is never[].
+// At runtime formatTranslationMessages only Object.keys()s it (yielding no
+// keys), so it behaves exactly like an empty message map; the cast models
+// that contract without touching the JSON file.
+const enTranslationMessages = enTranslationMessagesJson as unknown as Record<string, string>;
 
 export const appLocales = [
   'en',

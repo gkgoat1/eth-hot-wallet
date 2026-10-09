@@ -7,22 +7,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Modal, Button, Input, Icon, Tooltip } from 'antd';
+import { Modal as AntdModal, Button as AntdButton, Input as AntdInput, Icon as AntdIcon, Tooltip as AntdTooltip } from 'antd';
+
+// SAFETY: antd 3's bundled .d.ts files resolve 'react' to a hoisted
+// @types/react@19 under pnpm (node_modules/.pnpm/node_modules), whose Component
+// type lacks the `refs` member that @types/react@15's JSX.ElementClass requires.
+// styled-components v2's bundled typings resolve 'react' the same way. The
+// runtime components are unchanged; these aliases only re-type them for the
+// app's React 15 JSX checking.
+const Modal = AntdModal as unknown as React.ComponentType<any>;
+const Button = AntdButton as unknown as React.ComponentType<any>;
+const Input = AntdInput as unknown as React.ComponentType<any>;
+const Icon = AntdIcon as unknown as React.ComponentType<any>;
+const Tooltip = AntdTooltip as unknown as React.ComponentType<any>;
 
 const Div = styled.div`
   margin-top: 12px;
-`;
+` as unknown as React.ComponentType<any>;
 
 const Span = styled.span`
   color: red;
   font-size: 21px;
   padding-right: 12px;
   vertical-align: sub;
-`;
+` as unknown as React.ComponentType<any>;
 
 const Description = styled.div`
   margin-bottom: 10px;
-`;
+` as unknown as React.ComponentType<any>;
 
 interface RestoreWalletModalProps {
   isShowRestoreWallet?: boolean;

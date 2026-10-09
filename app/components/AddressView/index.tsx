@@ -20,12 +20,35 @@ const Div = styled.div`
   min-height: 100px;
 `;
 
+// SAFETY: antd 3 / styled-components v2 typings resolve 'react' to a hoisted
+// @types/react@19 under pnpm, whose Component type fails the app's React 15
+// JSX checker. The runtime components are unchanged; these aliases only
+// re-type them.
+const DivAny = Div as any;
+const SpinAny = Spin as any;
+const AlertAny = Alert as any;
+
+// plain JS object: address -> per-token data
+interface AddressMap {
+  [address: string]: any;
+}
+
+// plain JS object: number of decimals per token symbol
+interface TokenDecimalsMap {
+  [token: string]: number;
+}
+
+// plain JS object: exchange rates keyed by currency pair (ie 'eth_usd')
+interface ExchangeRates {
+  [pair: string]: any;
+}
+
 interface AddressViewProps {
   generateKeystoreLoading?: boolean;
   generateKeystoreError?: object | string | boolean;
   isComfirmed?: boolean;
-  addressMap?: object | boolean | any[];
-  tokenDecimalsMap?: boolean | object;
+  addressMap?: AddressMap | boolean;
+  tokenDecimalsMap?: boolean | TokenDecimalsMap;
   onShowSendToken: (address: string, token: string) => void;
   onShowTokenChooser: () => void;
 
@@ -40,7 +63,7 @@ interface AddressViewProps {
   checkingBalances?: boolean;
   checkingBalancesError?: object | string | boolean;
 
-  exchangeRates?: object;
+  exchangeRates?: ExchangeRates;
   onSelectCurrency: (convertTo: string) => void;
   convertTo?: string | boolean;
 
@@ -95,38 +118,43 @@ function AddressView(props: AddressViewProps) {
     onShowTokenChooser,
   };
 
+  // SAFETY: antd 3's `description` is typed ReactNode against
+  // @types/react@19, which React 15 string props do not satisfy. The value is
+  // always a renderable error string at runtime; the alias only re-types it.
+  const keystoreErrorDescription = generateKeystoreError as any;
+
   let addressViewContent = (
-    <Div>
+    <DivAny>
       {generateKeystoreError ?
-        <Alert
+        <AlertAny
           message="Generate Keystore Error"
-          description={generateKeystoreError}
+          description={keystoreErrorDescription}
           type="error"
           showIcon
         />
         :
         <WelcomeText />}
-    </Div>
+    </DivAny>
   );
 
   if (isComfirmed) {
     addressViewContent = (
-      <Div>
+      <DivAny>
         <AddressTable {...addressTableProps} />
         <AddressTableFooter {...addressTableFooterProps} />
-      </Div>
+      </DivAny>
     );
   }
 
   return (
-    <Spin
+    <SpinAny
       spinning={generateKeystoreLoading}
       style={{ position: 'static' }}
       size="large"
       tip="Loading..."
     >
       {addressViewContent}
-    </Spin>
+    </SpinAny>
   );
 }
 

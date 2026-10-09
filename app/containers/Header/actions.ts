@@ -4,9 +4,24 @@
  *
  */
 import React from 'react';
-import { message, Button, notification, Icon } from 'antd';
+import { message, Button as AntdButton, notification as antdNotification, Icon as AntdIcon } from 'antd';
 import FaucetDescription from 'components/FaucetDescription';
 import { offlineModeString } from 'utils/constants';
+
+// SAFETY: antd 3's bundled .d.ts files resolve 'react' to a hoisted
+// @types/react@19 under pnpm, whose ReactNode/Component types are incompatible
+// with @types/react@15's JSX/ElementClass checking used by this app. Runtime
+// behavior is unchanged; these aliases only re-type the statics for React 15.
+const Button = AntdButton as unknown as React.ComponentType<any>;
+const Icon = AntdIcon as unknown as React.ComponentType<any>;
+const notification = antdNotification as unknown as {
+  open: (config: { [key: string]: any }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  info: (config: { [key: string]: any }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  success: (config: { [key: string]: any }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  error: (config: { [key: string]: any }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  close: (key: string) => void;
+  config: (options: { [key: string]: any }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+};
 
 import {
   LOAD_NETWORK,
@@ -30,6 +45,8 @@ import {
   ASK_FAUCET_ERROR,
 } from './constants';
 
+// app/app.jsx is an untyped JS module exporting the configured redux store.
+// @ts-ignore
 import { store } from '../../app';
 
 export interface LoadNetworkAction {

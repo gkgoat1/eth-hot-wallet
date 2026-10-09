@@ -7,12 +7,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Table } from 'antd';
+import { Table as AntdTable } from 'antd';
 
 import CurrencyDropdown from 'components/CurrencyDropdown';
 import TokenIcon from 'components/TokenIcon';
 
-const { Column } = Table;
+// SAFETY: antd 3's bundled .d.ts files resolve 'react' to a hoisted
+// @types/react@19 under pnpm (node_modules/.pnpm/node_modules), whose Component
+// type lacks the `refs` member that @types/react@15's JSX.ElementClass requires.
+// styled-components v2's bundled typings resolve 'react' the same way. The
+// runtime components are unchanged; these aliases only re-type them for the
+// app's React 15 JSX checking.
+const { Column: AntdColumn } = AntdTable;
+const Column = AntdColumn as unknown as React.ComponentType<any>;
 // import { LocaleProvider } from 'antd';
 // import { FormattedMessage } from 'react-intl';
 // import messages from './messages';
@@ -46,7 +53,7 @@ interface AddressRow {
   convert?: string;
 }
 
-const AddrTable = styled(Table)`
+const AddrTable = styled(AntdTable)`
   max-width: 860px;
   margin-left: auto;
   margin-right: auto;
@@ -60,7 +67,7 @@ const AddrTable = styled(Table)`
   td.columnCenter{
     text-align: center;
   }
-`;
+` as unknown as React.ComponentType<any>;
 
 
 /**
@@ -204,7 +211,9 @@ function AddressTable(props: AddressTableProps) {
     convertTo,
   } = props;
 
-  const currencyDropdownProps = { exchangeRates, onSelectCurrency, convertTo };
+  // SAFETY: AddressTable only renders once a fiat pair is selected, so
+  // convertTo is always its string form here (never false/undefined).
+  const currencyDropdownProps = { exchangeRates, onSelectCurrency, convertTo: convertTo as string };
 
   // SAFETY: callers only render AddressTable once an address list exists,
   // so addressMap / tokenDecimalsMap / exchangeRates / convertTo are their object forms here (never false)
@@ -233,7 +242,7 @@ function AddressTable(props: AddressTableProps) {
         className="columnCenter"
         colSpan="1"
         rowSpan="3"
-        render={(text, record) => {
+        render={(text: any, record: AddressRow) => {
           const obj = {
             children: text,
             props: {} as { rowSpan?: number },
@@ -263,7 +272,7 @@ function AddressTable(props: AddressTableProps) {
         title="Icon"
         key="Icon"
         width="50px"
-        render={(text, record) => (
+        render={(text: any, record: AddressRow) => (
           <TokenIcon tokenSymbol={record.token} />
         )}
         className="columnCenter"
@@ -275,7 +284,7 @@ function AddressTable(props: AddressTableProps) {
         key="token"
         width="65px"
         className="columnCenter"
-        render={(text, record) => (
+        render={(text: any, record: AddressRow) => (
           record.token.toUpperCase()
         )}
       />
@@ -288,7 +297,7 @@ function AddressTable(props: AddressTableProps) {
           text: 'Remove empty',
           value: '0 ETH',
         }]}
-        onFilter={(value, record) => record.balance !== value}
+        onFilter={(value: any, record: AddressRow) => record.balance !== value}
       />
       <Column
         title={<CurrencyDropdown {...currencyDropdownProps} />}
@@ -300,7 +309,7 @@ function AddressTable(props: AddressTableProps) {
         width="65px"
         title="Action"
         key="action"
-        render={(text, record) => (
+        render={(text: any, record: AddressRow) => (
           <span>
             {/* <a href="#" >Show QR</a>
             <span className="ant-divider" /> */}

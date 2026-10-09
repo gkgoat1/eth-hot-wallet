@@ -2,14 +2,21 @@
  * Create the store with dynamic reducers.
  * (react-router-redux / immutable retained; framework swap is Phase 6.)
  */
-import { createStore, applyMiddleware, compose, type Store } from 'redux';
+import { createStore, applyMiddleware, compose, type Store, type Middleware } from 'redux';
 import { fromJS } from 'immutable';
-import { routerMiddleware } from 'react-router-redux';
+// SAFETY: react-router-redux@5.0.0-alpha.9 bundles no type declarations, so
+// TS7016 is suppressed on the import; routerMiddleware is re-typed at the
+// explicit binding below.
+// @ts-expect-error TS7016: react-router-redux ships no type declarations
+import { routerMiddleware as routerMiddlewareUntyped } from 'react-router-redux';
 import createSagaMiddleware from 'redux-saga';
 import createReducer from './reducers';
 import type { InjectableStore } from './utils/checkStore';
 
 const sagaMiddleware = createSagaMiddleware();
+
+// Explicitly typed binding over the untyped module import above.
+const routerMiddleware: (history: unknown) => Middleware = routerMiddlewareUntyped;
 
 declare global {
   interface Window {
@@ -21,7 +28,7 @@ export default function configureStore(
   initialState = {},
   history: unknown,
 ): Store<unknown> & InjectableStore {
-  const middlewares = [sagaMiddleware, routerMiddleware(history as never)];
+  const middlewares = [sagaMiddleware, routerMiddleware(history)];
 
   const enhancers = [applyMiddleware(...middlewares)];
 

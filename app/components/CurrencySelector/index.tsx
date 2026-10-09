@@ -18,6 +18,12 @@ interface CurrencySelectorProps {
 }
 
 function CurrencySelector({ convertTo, exchangeRates, onSelectCurrency }: CurrencySelectorProps) {
+  // SAFETY: `false` is the runtime "no currency selected" sentinel for the
+  // native <select>/<option> value (React 15 drops a false value attribute,
+  // leaving the first option selected). The React 15 DOM typings only admit
+  // string | number | string[], so this cast re-exposes the runtime value
+  // without changing it.
+  const noSelectionValue = false as unknown as string;
   const options: JSX.Element[] = [];
   if (exchangeRates.size > 0) {
     exchangeRates.entrySeq().forEach((entry: [string, any]) => {
@@ -36,11 +42,14 @@ function CurrencySelector({ convertTo, exchangeRates, onSelectCurrency }: Curren
       <FormattedMessage {...messages.header} />
       <label htmlFor="currencySelectorDropdown">
         <select
-          value={convertTo}
+          // SAFETY: `convertTo` may be the `false` sentinel; see
+          // noSelectionValue above. The narrowing cast does not change the
+          // runtime value passed to the DOM.
+          value={convertTo as string | undefined}
           onChange={(evt: { target: { value: string } }) => onSelectCurrency(evt.target.value)}
           disabled={false}
         >
-          <option value={false}>{'select'} </option>
+          <option value={noSelectionValue}>{'select'} </option>
           {options}
         </select>
       </label>

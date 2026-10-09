@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import { createWeb3Adapter } from '@eth-hot-wallet/web3-adapter';
 import type { Web3Adapter } from '@eth-hot-wallet/web3-adapter';
 import { take, call, put, select, takeLatest, race, fork } from 'redux-saga/effects';
+import type { Effect } from 'redux-saga';
 
 import {
   makeSelectKeystore,
@@ -93,6 +94,13 @@ import Network from './network';
 // passwordProvider, scoped to each send (see adapter docs).
 let adapter: Web3Adapter | null = null;
 
+// Narrow `unknown` catch values for message extraction (strict-mode catch is
+// `unknown`); keeps runtime semantics identical to the original JS.
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
+
 /* For development only, if online = false then most api calls will be replaced by constant values
 * affected functions:
 * loadNetwork() will connect to 'Local RPC' but default network name will be showen in gui
@@ -159,7 +167,7 @@ export function* loadNetwork(action: LoadNetworkAction): Generator {
     }
   } catch (err) {
     // const errorString = `loadNetwork error - ${err.message}`;
-    yield put(loadNetworkError(err.message));
+    yield put(loadNetworkError(getErrorMessage(err)));
   }
   /* This will happen after successful network load */
 }
@@ -193,7 +201,7 @@ export function* confirmSendTransaction(): Generator {
     yield put(confirmSendTransactionSuccess(msg));
   } catch (err) {
     // const errorString = `confirmSendTransaction error - ${err.message}`;
-    yield put(confirmSendTransactionError(err.message));
+    yield put(confirmSendTransactionError(getErrorMessage(err)));
   }
 }
 
@@ -253,8 +261,9 @@ export function* SendTransaction(): Generator {
 
     yield put(sendTransactionSuccess(tx));
   } catch (err) {
-    const loc = err.message.indexOf('at runCall');
-    const errMsg = (loc > -1) ? err.message.slice(0, loc) : err.message;
+    const message = getErrorMessage(err);
+    const loc = message.indexOf('at runCall');
+    const errMsg = (loc > -1) ? message.slice(0, loc) : message;
     yield put(sendTransactionError(errMsg));
   }
 }
@@ -323,7 +332,7 @@ export function* checkAllBalances(): Generator {
 
     yield put(checkBalancesSuccess());
   } catch (err) {
-    yield put(CheckBalancesError(err.message));
+    yield put(CheckBalancesError(getErrorMessage(err)));
   }
 }
 
@@ -354,10 +363,14 @@ function* pollData(): Generator {
 function* watchPollData(): Generator {
   while (true) { // eslint-disable-line
     yield take([CHECK_BALANCES_SUCCESS, CHECK_BALANCES_ERROR]);
+    // SAFETY: redux-saga@0.15's runtime supports array races (positional
+    // winner result; see runRaceEffect in proc.js) and the result is unused
+    // here, but its bundled types only declare the keyed-object overloads.
+    // The assertion bridges that gap; the dispatched effect is unchanged.
     yield race([ // eslint-disable-line
       call(pollData),
       take(STOP_POLL_BALANCES),
-    ]);
+    ] as unknown as { [key: string]: Effect });
   }
 }
 /* ******************************************************************************** */

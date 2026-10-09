@@ -7,6 +7,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { website } from 'utils/constants';
+// @ts-expect-error webpack resolves this via file-loader at runtime; there is
+// no ambient module declaration for '*.svg' in this project.
 import walletLogo from './hot-wallet.svg';
 
 const Div = styled.div`
@@ -22,14 +24,21 @@ const Img = styled.img`
   margin-right: 10px;
 `;
 
+// SAFETY: styled-components v2's bundled typings resolve against @types/react
+// 19 in this pnpm layout while app code resolves @types/react 15, so styled
+// tags fail the React 15 JSX checker. Runtime behavior is unchanged; the casts
+// only re-expose the styled tags as JSX components.
+const DivAny = Div as any;
+const ImgAny = Img as any;
+
 function Logo() {
   return (
-    <Div>
-      <Img alt="logo" src={walletLogo} />
+    <DivAny>
+      <ImgAny alt="logo" src={walletLogo} />
       <a href={website}>
         ETH Hot Wallet
       </a>
-    </Div>
+    </DivAny>
   );
 }
 

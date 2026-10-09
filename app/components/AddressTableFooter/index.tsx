@@ -18,6 +18,12 @@ const Div = styled.div`
   }
 `;
 
+// SAFETY: styled-components v2's bundled typings resolve against @types/react
+// 19 in this pnpm layout while app code resolves @types/react 15, so styled
+// tags fail the React 15 JSX checker. Runtime behavior is unchanged; the cast
+// only re-exposes the styled tag as a JSX component.
+const DivAny = Div as any;
+
 
 interface AddressTableFooterProps {
   checkingBalancesError?: object | string | boolean;
@@ -57,7 +63,7 @@ function AddressTableFooter(props: AddressTableFooterProps) {
   } = props;
 
   return (
-    <Div>
+    <DivAny>
       <IconButton
         text="Add address"
         icon="plus"
@@ -94,7 +100,7 @@ function AddressTableFooter(props: AddressTableFooterProps) {
         // onClick, loading, error, disabled, popconfirmMsg
       />
       <br /><br />
-    </Div>
+    </DivAny>
   );
 }
 

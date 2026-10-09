@@ -30,12 +30,17 @@ function AddressItem(props: AddressItemProps) {
   const convertedBalance = (balance !== 'n/a' && rate) ? ethData.get('balance').div(Ether).times(rate).toFixed(2).toString(10) : '';
   const convertToName = exchangeRates.getIn([convertTo, 'name']);
 
+  // SAFETY: AddressItem is only rendered by AddressList as
+  // addressList.entrySeq().map(...), so `address` is always a defined Map key;
+  // the cast only narrows the optional prop.
+  const fromAddress = address as string;
+
   return (
     <div>
       {address} |
       Balance: {balance}
       {convertedBalance} {convertToName}
-      <button onClick={() => onChangeFrom(address)}>
+      <button onClick={() => onChangeFrom(fromAddress)}>
         Send
       </button>
     </div>

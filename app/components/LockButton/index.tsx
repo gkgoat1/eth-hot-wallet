@@ -18,23 +18,30 @@ interface LockButtonProps {
   onUnlockWallet?: () => void;
 }
 
+// SAFETY: antd 3's bundled .d.ts files resolve 'react' to a hoisted
+// @types/react@19 under pnpm, whose Component type fails the app's React 15
+// JSX checker. The runtime components are unchanged; these aliases only
+// re-type them.
+const PopconfirmAny = Popconfirm as any;
+const ButtonAny = Button as any;
+
 function LockButton(props: LockButtonProps) {
   const { onLockWallet, password, onUnlockWallet } = props;
 
   if (password) {
     return (
-      <Popconfirm key="close_wallet" placement="bottom" title="Comfirm locking wallet" onConfirm={onLockWallet} okText="Confirm" cancelText="Abort">
-        <Button icon="lock" type="default" size="large" >
+      <PopconfirmAny key="close_wallet" placement="bottom" title="Comfirm locking wallet" onConfirm={onLockWallet} okText="Confirm" cancelText="Abort">
+        <ButtonAny icon="lock" type="default" size="large" >
           Lock Wallet
-        </Button>
-      </Popconfirm>
+        </ButtonAny>
+      </PopconfirmAny>
     );
   }
 
   return (
-    <Button icon="unlock" type="default" size="large" onClick={onUnlockWallet}>
+    <ButtonAny icon="unlock" type="default" size="large" onClick={onUnlockWallet}>
       Unlock Wallet
-    </Button>
+    </ButtonAny>
   );
 }
 

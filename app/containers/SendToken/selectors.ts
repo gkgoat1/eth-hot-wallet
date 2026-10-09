@@ -1,10 +1,17 @@
 
 import { createSelector } from 'reselect';
 
+// The redux state tree is an Immutable.Map; sendtoken state values are
+// dynamic (fromJS), so getters stay loosely typed. Same convention as
+// HomePage/selectors.
+type ImmutableState = {
+  get: (key: string) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+};
+
 /**
  * Direct selector to the sendToken state domain
  */
-const selectSendTokenDomain = (state) => state.get('sendtoken');
+const selectSendTokenDomain = (state: ImmutableState) => state.get('sendtoken');
 
 
 const makeSelectFrom = () => createSelector(

@@ -17,7 +17,13 @@ const initialState = fromJS({
   locale: DEFAULT_LOCALE,
 });
 
-function languageProviderReducer(state = initialState, action) {
+// Loose action shape; matches ChangeLocaleAction in ./actions.
+interface LanguageProviderAction {
+  type: string;
+  locale?: string;
+}
+
+function languageProviderReducer(state = initialState, action: LanguageProviderAction) {
   switch (action.type) {
     case CHANGE_LOCALE:
       return state

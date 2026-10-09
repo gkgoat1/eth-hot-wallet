@@ -2,6 +2,9 @@
  * Wallet operations
  */
 import lightwallet from 'eth-lightwallet-next';
+// The 'store' package ships no type declarations for its dist entry points;
+// only get/set/clearAll are used below (localStorage-backed store).
+// @ts-ignore
 import localStore from 'store/dist/store.modern';
 
 import { call, put, select, takeLatest } from 'redux-saga/effects';
@@ -87,7 +90,7 @@ interface WalletDump {
 /**
  * Create new seed and password
  */
-export function* generateWallet() {
+export function* generateWallet(): IterableIterator<any> {
   try {
     const password = generateString(generatedPasswordLength);
     const extraEntropy = generateString(generatedPasswordLength);
@@ -105,7 +108,7 @@ export function* generateWallet() {
 /**
  * check seed given by user
  */
-export function* restoreFromSeed() {
+export function* restoreFromSeed(): IterableIterator<any> {
   try {
     const userPassword = yield select(makeSelectUserPassword());
     let userSeed = yield select(makeSelectUserSeed());
@@ -152,7 +155,7 @@ function createVaultPromise(param: CreateVaultParam): Promise<Keystore> {
 /**
  * Create new keystore and generate some addreses
  */
-export function* genKeystore() {
+export function* genKeystore(): IterableIterator<any> {
   try {
     const password = yield select(makeSelectPassword());
     const seedPhrase = yield select(makeSelectSeed());
@@ -202,7 +205,7 @@ export function* genKeystore() {
  * Generate new address from same key
  * will run after GENERATE_ADDRESS action
  */
-export function* generateAddress() {
+export function* generateAddress(): IterableIterator<any> {
   try {
     const ks: Keystore = yield select(makeSelectKeystore());
     if (!ks) {
@@ -250,7 +253,7 @@ export function* generateAddress() {
 /**
  * unlock wallet using user given password
  */
-export function* unlockWallet() {
+export function* unlockWallet(): IterableIterator<any> {
   try {
     const currentPassword = yield select(makeSelectPassword());
     if (currentPassword) {
@@ -308,7 +311,7 @@ export function* unlockWallet() {
 /**
  * change source address and token when opening send modal
  */
-export function* changeSourceAddress(action: { type: string; address?: string; sendTokenSymbol?: string }) {
+export function* changeSourceAddress(action: { type: string; address?: string; sendTokenSymbol?: string }): IterableIterator<any> {
   // wait for container to load and then change from address
   if (action.address) {
     yield put(changeFrom(action.address, action.sendTokenSymbol));
@@ -318,7 +321,7 @@ export function* changeSourceAddress(action: { type: string; address?: string; s
 /**
  * Disconnect from network during closeWallet
  */
-export function* closeWallet() {
+export function* closeWallet(): IterableIterator<any> {
   yield deleteWallet();
   yield put(loadNetwork(offlineModeString));
 }
@@ -326,7 +329,7 @@ export function* closeWallet() {
 /**
  * Save wallet to localStorage
  */
-export function* saveWalletS() {
+export function* saveWalletS(): IterableIterator<any> {
   try {
     const ks: Keystore = yield select(makeSelectKeystore());
     if (!ks) {
@@ -352,7 +355,7 @@ export function* saveWalletS() {
 /**
  * Load wallet from localStorage
  */
-export function* loadWalletS() {
+export function* loadWalletS(): IterableIterator<any> {
   try {
     yield call(timer, 1000);
     const existingKs = yield select(makeSelectKeystore());
@@ -382,7 +385,7 @@ export function* loadWalletS() {
 /**
  * delete all values from localStorage
  */
-export function* deleteWallet() {
+export function* deleteWallet(): IterableIterator<any> {
   localStore.clearAll();
 }
 
@@ -391,7 +394,7 @@ export function* deleteWallet() {
  * @param {object} action dispatched by tokenChooser
  * @param {object} action.tokenInfo
  */
-export function* chosenTokenInfo(action: { type: string; tokenInfo: { [symbol: string]: import('./actions').TokenInfoEntry } }) {
+export function* chosenTokenInfo(action: { type: string; tokenInfo: { [symbol: string]: import('./actions').TokenInfoEntry } }): IterableIterator<any> {
   const addressList = (yield select(makeSelectKeystore())).getAddresses();
   yield put(updateTokenInfo(addressList, action.tokenInfo));
 }
@@ -399,7 +402,7 @@ export function* chosenTokenInfo(action: { type: string; tokenInfo: { [symbol: s
 /**
  * Root saga manages watcher lifecycle
  */
-export default function* walletData() {
+export default function* walletData(): IterableIterator<any> {
   // Watches for INIT_WALLET actions and calls initKS when one comes in.
   // By using `takeLatest` only the result of the latest API call is applied.
   // It returns task descriptor (just like fork) so we can continue execution

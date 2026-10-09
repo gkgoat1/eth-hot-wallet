@@ -9,6 +9,15 @@ import PropTypes from 'prop-types';
 import { Button, Popconfirm, Tooltip } from 'antd';
 import styled from 'styled-components';
 
+// SAFETY: antd 3's bundled types resolve against @types/react 19 in this
+// pnpm layout while app code resolves @types/react 15, so every antd class
+// component fails JSX validation with spurious errors. At runtime these are
+// ordinary React 15-compatible components; the casts only re-expose them to
+// the React 15 JSX checker.
+const ButtonAny = Button as any;
+const PopconfirmAny = Popconfirm as any;
+const TooltipAny = Tooltip as any;
+
 const ErrorSpan = styled.span`
   .anticon {
     color: red;
@@ -17,6 +26,10 @@ const ErrorSpan = styled.span`
     color: red;
   }
   `;
+// SAFETY: styled-components v2 has no bundled types; the installed
+// @types/styled-components resolves against @types/react 19, so styled tags
+// fail the React 15 JSX checker. Runtime behavior is unchanged.
+const ErrorSpanAny = ErrorSpan as any;
 
 interface BtnProps {
   error?: object | string | boolean;
@@ -31,7 +44,7 @@ interface BtnProps {
 }
 
 const Btn = ({ error, popconfirm, text, loading, disabled, popconfirmMsg, onClick, icon, ...btnProps }: BtnProps) => (
-  <Button
+  <ButtonAny
     icon={icon}
     type="default"
     size="large"
@@ -41,7 +54,7 @@ const Btn = ({ error, popconfirm, text, loading, disabled, popconfirmMsg, onClic
     {...btnProps}
   >
     {text}
-  </Button>
+  </ButtonAny>
 );
 // SAFETY: propTypes is a React runtime field; without @types/react the plain
 // function type has no such property, so the cast only re-exposes it.
@@ -60,10 +73,10 @@ const Btn = ({ error, popconfirm, text, loading, disabled, popconfirmMsg, onClic
 const handlePopconfirm = (popConfirmText: object | string | boolean | undefined, onClick: (() => void) | undefined, component: JSX.Element) => {
   if (popConfirmText) {
     return (
-      <Popconfirm placement="top" title={popConfirmText} onConfirm={onClick} okText="Confirm" cancelText="Abort">
+      <PopconfirmAny placement="top" title={popConfirmText} onConfirm={onClick} okText="Confirm" cancelText="Abort">
         {component}
         <span />
-      </Popconfirm>
+      </PopconfirmAny>
     );
   }
   return (component);
@@ -88,11 +101,11 @@ function IconButton(props: IconButtonProps) {
   const handleError = (err: object | string | boolean | undefined, component: JSX.Element) => {
     if (err) {
       return (
-        <Tooltip placement="bottom" title={`${err} - Click to retry`}>
-          <ErrorSpan>
+        <TooltipAny placement="bottom" title={`${err} - Click to retry`}>
+          <ErrorSpanAny>
             {component}
-          </ErrorSpan>
-        </Tooltip>
+          </ErrorSpanAny>
+        </TooltipAny>
       );
     }
     return (component);

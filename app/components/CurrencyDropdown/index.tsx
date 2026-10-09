@@ -10,6 +10,15 @@ import { Menu, Dropdown, Icon } from 'antd';
 // import styled from 'styled-components';
 const MenuItem = Menu.Item;
 
+// SAFETY: antd 3's bundled .d.ts files resolve 'react' to a hoisted
+// @types/react@19 under pnpm, whose Component type fails the app's React 15
+// JSX checker. The runtime components are unchanged; these aliases only
+// re-type them.
+const MenuAny = Menu as any;
+const MenuItemAny = MenuItem as any;
+const DropdownAny = Dropdown as any;
+const IconAny = Icon as any;
+
 // plain JS object: exchange rates keyed by currency pair (ie 'eth_usd')
 interface ExchangeRates {
   [pair: string]: any;
@@ -29,22 +38,22 @@ function CurrencyDropdown(props: CurrencyDropdownProps) {
   const convertMenuOptions: JSX.Element[] = [];
   if (exchangeRates) {
     Object.keys(exchangeRates).forEach((currency) => {
-      convertMenuOptions.push(<MenuItem key={currency}>{exchangeRates[currency].name}</MenuItem>);
+      convertMenuOptions.push(<MenuItemAny key={currency}>{exchangeRates[currency].name}</MenuItemAny>);
     });
   }
   const convertToMenu = (
-    <Menu onClick={(evt: { key: string }) => onSelectCurrency(evt.key)}>
-      <MenuItem key={'none'}>None</MenuItem>
+    <MenuAny onClick={(evt: { key: string }) => onSelectCurrency(evt.key)}>
+      <MenuItemAny key={'none'}>None</MenuItemAny>
       {convertMenuOptions}
-    </Menu>
+    </MenuAny>
   );
 
   return (
-    <Dropdown overlay={convertToMenu}>
+    <DropdownAny overlay={convertToMenu}>
       <span>
-        {convertToSymbol === 'none' ? 'Convert' : `${convertToSymbol}`}<Icon type="down" />
+        {convertToSymbol === 'none' ? 'Convert' : `${convertToSymbol}`}<IconAny type="down" />
       </span>
-    </Dropdown>
+    </DropdownAny>
   );
 }
 

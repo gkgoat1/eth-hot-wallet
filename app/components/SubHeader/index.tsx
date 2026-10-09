@@ -25,6 +25,14 @@ const Div = styled.div`
   }
 `;
 
+// SAFETY: antd 3 / styled-components v2 typings resolve 'react' to a hoisted
+// @types/react@19 under pnpm, whose Component type fails the app's React 15
+// JSX checker. The runtime components are unchanged; these aliases only
+// re-type them.
+const DivAny = Div as any;
+const ButtonAny = Button as any;
+const PopconfirmAny = Popconfirm as any;
+
 interface SubHeaderProps {
   onGenerateWallet?: () => void;
   onShowRestoreWallet?: () => void;
@@ -47,12 +55,12 @@ function SubHeader(props: SubHeaderProps) {
   const lockButtonProps = { onLockWallet, password, onUnlockWallet };
 
   const noWalletSubHeader = [
-    <Button key="new_wallet" type="primary" size="large" onClick={onGenerateWallet}>
+    <ButtonAny key="new_wallet" type="primary" size="large" onClick={onGenerateWallet}>
       New wallet
-    </Button>,
-    <Button key="restore_wallet" type="default" size="large" onClick={onShowRestoreWallet}>
+    </ButtonAny>,
+    <ButtonAny key="restore_wallet" type="default" size="large" onClick={onShowRestoreWallet}>
       Restore wallet
-    </Button>,
+    </ButtonAny>,
     /* optional laod / save buttons
      <IconButton
       key="load"
@@ -66,11 +74,11 @@ function SubHeader(props: SubHeaderProps) {
 
   const existingWalletSubHeader = [
     <LockButton key="lock_button" {...lockButtonProps} />,
-    <Popconfirm key="close_wallet" placement="bottom" title="Wallet will be deleted from memory and LocalStorage" onConfirm={onCloseWallet} okText="Confirm" cancelText="Abort">
-      <Button key="close_wallet" type="default" icon="close-square-o" size="large">
+    <PopconfirmAny key="close_wallet" placement="bottom" title="Wallet will be deleted from memory and LocalStorage" onConfirm={onCloseWallet} okText="Confirm" cancelText="Abort">
+      <ButtonAny key="close_wallet" type="default" icon="close-square-o" size="large">
         Close wallet
-      </Button>
-    </Popconfirm>,
+      </ButtonAny>
+    </PopconfirmAny>,
     /* optional laod / save buttons
     <IconButton
       key="save"
@@ -87,9 +95,9 @@ function SubHeader(props: SubHeaderProps) {
   const subHeader = isComfirmed ? existingWalletSubHeader : noWalletSubHeader;
 
   return (
-    <Div>
+    <DivAny>
       {subHeader}
-    </Div>
+    </DivAny>
   );
 }
 

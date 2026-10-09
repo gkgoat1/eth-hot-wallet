@@ -26,7 +26,9 @@ function NetworkLabel(props: NetworkLabelProps) {
     return <div> {error} </div>;
   }
 
-  const networkNameStr = networkName.replace(/_/g, ' ');
+  // SAFETY: when `error === false` the caller always provides a networkName;
+  // the cast only narrows the optional prop for the React 15 typings.
+  const networkNameStr = (networkName as string).replace(/_/g, ' ');
   if (networkName !== '') {
     return (
       <div>

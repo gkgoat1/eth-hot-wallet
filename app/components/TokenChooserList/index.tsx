@@ -9,8 +9,16 @@ import PropTypes from 'prop-types';
 import { List, Switch } from 'antd';
 import styled from 'styled-components';
 import TokenIcon from 'components/TokenIcon';
-const ListItem = List.Item;
-const ListItemMeta = List.Item.Meta;
+
+// SAFETY: antd 3's bundled types resolve against @types/react 19 in this
+// pnpm layout while app code resolves @types/react 15, so every antd class
+// component fails JSX validation with spurious errors. At runtime these are
+// ordinary React 15-compatible components; the casts only re-expose them to
+// the React 15 JSX checker.
+const ListAny = List as any;
+const SwitchAny = Switch as any;
+const ListItem = ListAny.Item;
+const ListItemMeta = ListAny.Item.Meta;
 /*
 tokenList={TokensForNetwork}
 selectedTokens={[]}
@@ -22,6 +30,10 @@ const LeftDiv = styled.div`
   text-align:left;
 }
 `;
+// SAFETY: styled-components v2 has no bundled types; the installed
+// @types/styled-components resolves against @types/react 19, so styled tags
+// fail the React 15 JSX checker. Runtime behavior is unchanged.
+const LeftDivAny = LeftDiv as any;
 
 interface TokenInfo {
   symbol: string;
@@ -37,14 +49,14 @@ interface TokenChooserListProps {
 }
 
 function TokenChooserList(props: TokenChooserListProps) {
-  const { tokenList, chosenTokens, onTokenToggle } = props;
+  const { tokenList = [], chosenTokens = {}, onTokenToggle = () => undefined } = props;
   return (
-    <LeftDiv>
-      <List
+    <LeftDivAny>
+      <ListAny
         itemLayout="horizontal"
         dataSource={tokenList}
-        renderItem={(item) => (
-          <ListItem actions={[<Switch checked={chosenTokens[item.symbol]} onChange={(toggle) => onTokenToggle(item.symbol, toggle)} />]}>
+        renderItem={(item: TokenInfo) => (
+          <ListItem actions={[<SwitchAny checked={chosenTokens[item.symbol]} onChange={(toggle: boolean) => onTokenToggle(item.symbol, toggle)} />]}>
             <ListItemMeta
               avatar={<TokenIcon tokenSymbol={item.symbol} size={32} />}
               title={<a href={item.url} target="_blank" rel="noopener">{item.name} ({item.symbol.toUpperCase()})</a>}
@@ -53,7 +65,7 @@ function TokenChooserList(props: TokenChooserListProps) {
           </ListItem>
         )}
       />
-    </LeftDiv>
+    </LeftDivAny>
   );
 }
 

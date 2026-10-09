@@ -7,7 +7,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 // import styled from 'styled-components';
-import { Modal, Button, Alert } from 'antd';
+import { Modal as AntdModal, Button as AntdButton, Alert as AntdAlert } from 'antd';
+
+// SAFETY: antd 3's bundled .d.ts files resolve 'react' to a hoisted
+// @types/react@19 under pnpm (node_modules/.pnpm/node_modules), whose Component
+// type lacks the `refs` member that @types/react@15's JSX.ElementClass requires.
+// The runtime components are unchanged; these aliases only re-type them for the
+// app's React 15 JSX checking.
+const Modal = AntdModal as unknown as React.ComponentType<any>;
+const Button = AntdButton as unknown as React.ComponentType<any>;
+const Alert = AntdAlert as unknown as React.ComponentType<any>;
 
 interface GenerateWalletModalProps {
   isShowGenerateWallet?: boolean;
