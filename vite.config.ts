@@ -18,7 +18,7 @@ export default defineConfig({
       // preserves the defineMessages/FormattedMessage surface the app uses.
       'react-intl': resolve(__dirname, 'app/utils/react-intl-stub.tsx'),
       // modernized packages
-      '@eth-hot-wallet/web3-adapter': resolve(__dirname, 'packages/web3-adapter/src/index.ts'),
+      '@gkgo/eth-hot-wallet-web3-adapter': resolve(__dirname, 'packages/web3-adapter/src/index.ts'),
     },
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
   },

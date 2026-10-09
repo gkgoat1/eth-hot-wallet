@@ -1,5 +1,5 @@
 /**
- * Anvil integration tests for @eth-hot-wallet/web3-adapter.
+ * Anvil integration tests for @gkgo/eth-hot-wallet-web3-adapter.
  *
  * Exercises the real signing path: a lightwallet keystore (the modernized
  * eth-lightwallet-next) signs a raw tx via passwordProvider, the adapter

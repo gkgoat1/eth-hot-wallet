@@ -1,5 +1,5 @@
 {
-  "name": "@eth-hot-wallet/web3-adapter",
+  "name": "@gkgo/eth-hot-wallet-web3-adapter",
   "version": "0.1.0",
   "description": "viem-based drop-in for the web3@0.20 + ethjs-provider-signer surface used by eth-hot-wallet",
   "type": "module",

@@ -1,5 +1,5 @@
 /**
- * @eth-hot-wallet/web3-adapter
+ * @gkgo/eth-hot-wallet-web3-adapter
  *
  * viem-based drop-in for the web3@0.20 + ethjs-provider-signer surface that
  * eth-hot-wallet uses. Preserves behavior (wei-denominated numbers, gasPrice

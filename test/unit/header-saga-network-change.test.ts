@@ -8,7 +8,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@eth-hot-wallet/web3-adapter', () => ({
+vi.mock('@gkgo/eth-hot-wallet-web3-adapter', () => ({
   createWeb3Adapter: () => ({
     getBlockNumber: () => Promise.resolve(1n),
     getBalance: () => Promise.resolve(0n),

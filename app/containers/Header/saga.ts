@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import { createWeb3Adapter } from '@eth-hot-wallet/web3-adapter';
-import type { Web3Adapter } from '@eth-hot-wallet/web3-adapter';
+import { createWeb3Adapter } from '@gkgo/eth-hot-wallet-web3-adapter';
+import type { Web3Adapter } from '@gkgo/eth-hot-wallet-web3-adapter';
 import { take, call, put, select, takeLatest, race, fork } from 'redux-saga/effects';
 import type { Effect } from 'redux-saga';
 
