@@ -12,27 +12,36 @@ import PropTypes from 'prop-types';
 import { Ether } from 'utils/constants';
 // import messages from './messages';
 
+// Plain-JS per-token data for one address ({ balance: BigNumber | false }).
+interface TokenEntry {
+  balance?: any;
+}
+
 interface AddressItemProps {
   address?: string;
-  data?: any; // immutable Map of token -> data
+  data?: Record<string, TokenEntry>; // plain object: token symbol -> data
   onChangeFrom: (address: string) => void;
-  exchangeRates?: any; // immutable Map
+  exchangeRates?: Record<string, any>; // plain object: pair -> { name, rate }
   convertTo?: string | boolean;
 }
 
 function AddressItem(props: AddressItemProps) {
   const { address, data, onChangeFrom, exchangeRates, convertTo } = props;
-  const ethData = data.get('eth');
+  // SAFETY: data/exchangeRates are optional in the props type but always
+  // provided by AddressList (the only caller); the old Immutable .get() would
+  // have thrown on a missing Map the same way this member access does.
+  const ethData = data!.eth;
 
-  const balance = ethData.get('balance') !== false ? `${ethData.get('balance').div(Ether).toString(10)} ETH ` : 'n/a';
+  const balance = ethData.balance !== false ? `${ethData.balance.div(Ether).toString(10)} ETH ` : 'n/a';
 
-  const rate = exchangeRates.getIn([convertTo, 'rate']);
-  const convertedBalance = (balance !== 'n/a' && rate) ? ethData.get('balance').div(Ether).times(rate).toFixed(2).toString(10) : '';
-  const convertToName = exchangeRates.getIn([convertTo, 'name']);
+  const rateInfo = (exchangeRates as any)[convertTo as string];
+  const rate = rateInfo && rateInfo.rate;
+  const convertedBalance = (balance !== 'n/a' && rate) ? ethData.balance.div(Ether).times(rate).toFixed(2).toString(10) : '';
+  const convertToName = rateInfo && rateInfo.name;
 
   // SAFETY: AddressItem is only rendered by AddressList as
-  // addressList.entrySeq().map(...), so `address` is always a defined Map key;
-  // the cast only narrows the optional prop.
+  // Object.entries(addressList).map(...), so `address` is always a defined
+  // object key; the cast only narrows the optional prop.
   const fromAddress = address as string;
 
   return (

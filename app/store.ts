@@ -4,10 +4,9 @@
  * Phase 6: React Router v6 owns routing/history, so react-router-redux and its
  * routerMiddleware are removed. Redux Toolkit's configureStore replaces the
  * redux@3 createStore + compose plumbing. Immutable/redux-immutable state is
- * retained for now (dropping it is the dedicated immutable-removal step).
+ * removed: the store holds plain JS objects.
  */
 import { configureStore, type Store } from '@reduxjs/toolkit';
-import { fromJS } from 'immutable';
 import createSagaMiddleware from 'redux-saga';
 import createReducer from './reducers';
 import type { InjectableStore } from './utils/checkStore';
@@ -19,11 +18,11 @@ export type AppStore = Store & InjectableStore;
 export default function configureAppStore(initialState = {}): AppStore {
   const store = configureStore({
     reducer: createReducer() as never,
-    preloadedState: fromJS(initialState) as never,
+    preloadedState: initialState,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
-        // The app stores non-serializable values (keystore instances, BigNumber)
-        // and Immutable state, so RTK's default dev checks don't apply.
+        // The app stores non-serializable values (keystore instances,
+        // BigNumber), so RTK's default dev checks don't apply.
         serializableCheck: false,
         immutableCheck: false,
       }).concat(sagaMiddleware),

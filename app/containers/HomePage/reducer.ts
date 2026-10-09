@@ -7,9 +7,9 @@
  *
  * Example:
  * case YOUR_ACTION_CONSTANT:
- *   return state.set('yourStateVariable', true);
+ *   return { ...state, yourStateVariable: true };
  */
-import { fromJS } from 'immutable';
+import type { Reducer } from 'redux';
 
 import {
   GENERATE_WALLET,
@@ -64,16 +64,88 @@ import {
   LOAD_WALLET_ERROR,
 } from './constants';
 
+// The wallet's per-token entry for one address (e.g. { balance: BigNumber|false }).
+export interface TokenEntry {
+  balance?: unknown;
+  [key: string]: unknown;
+}
+
+// One address's token map: { index?: number, eth: {...}, omg: {...}, ... }.
+export interface TokenMap {
+  index?: number;
+  [symbol: string]: unknown;
+}
+
+// address -> TokenMap, or `false` before a keystore exists.
+export type AddressMap = Record<string, TokenMap>;
+
+export interface TokenInfo {
+  name?: string;
+  symbol?: string;
+  contractAddress?: string | null;
+  decimals?: number;
+  [key: string]: unknown;
+}
+
+export type ExchangeRates = Record<string, unknown>;
+
+// Plain-JS shape of the 'home' state. The `false` sentinels and the optional
+// local-storage keys mirror the previous Immutable Map exactly — including the
+// checkLocalStorage*/isLocalStorageWallet keys, which existed only after a
+// CHECK_LOCAL_STORAGE/LOCAL_STORAGE_* action and thus read as `undefined`.
+export interface HomeState {
+  isShowGenerateWallet: boolean;
+  generateWalletLoading: boolean; // generate new seed and password
+  generateWalletError: unknown;
+  password: unknown; // string | false
+  seed: unknown; // string | false
+
+  generateKeystoreLoading: boolean;
+  generateKeystoreError: unknown; // if error - no addressList displayed
+
+  isShowRestoreWallet: boolean;
+  userSeed: string;
+  userPassword: string;
+  restoreWalletError: unknown;
+
+  isComfirmed: boolean; // if true then we have a valid keystore
+
+  keystore: unknown; // keystore instance | false
+  addressList: AddressMap | false;
+
+  exchangeRates: ExchangeRates;
+  convertTo: unknown; // string; was fromJS-wrapped in the Immutable state
+
+  addressListLoading: boolean; // for addressList loading and error
+  addressListError: unknown;
+  addressListMsg: unknown; // string | false
+
+  isShowSendToken: boolean;
+  isShowTokenChooser: boolean;
+
+  saveWalletLoading: boolean;
+  saveWalletError: unknown;
+  loadWalletLoading: boolean;
+  loadWalletError: unknown;
+
+  tokenInfo: Record<string, TokenInfo>;
+
+  // Set by CHECK_LOCAL_STORAGE / LOCAL_STORAGE_* actions; absent from
+  // initialState before, so they surface as `undefined` until then.
+  checkLocalStorageLoading?: boolean;
+  isLocalStorageWallet?: boolean;
+}
+
 // The initial state of the App
-const initialState = fromJS({
+const initialState: HomeState = {
   isShowGenerateWallet: false,
-  generateWalletLoading: false,  // generate new seed and password
+  generateWalletLoading: false, // generate new seed and password
   generateWalletError: false,
   password: false,
   seed: false,
 
   generateKeystoreLoading: false,
-  generateKeystoreError: false,  // if error - no addressList displayed
+  generateKeystoreError: false, // if error - no addressList displayed
 
   isShowRestoreWallet: false,
   userSeed: '',
@@ -133,7 +205,7 @@ const initialState = fromJS({
       decimals: 18,
     },
   },
-});
+};
 
 // Actions handled here carry heterogeneous payloads (seed, keystore, addressMap,
 // error, ...); the reducer only reads them via action.* so a loose shape is fine.
@@ -142,182 +214,274 @@ interface HomeAction {
   [key: string]: unknown;
 }
 
-function homeReducer(state = initialState, action: HomeAction) {
+function homeReducer(state: HomeState = initialState, action: HomeAction): HomeState {
   switch (action.type) {
 
     case GENERATE_WALLET:
-      return state
-        .set('isShowGenerateWallet', true)
-        .set('generateWalletLoading', true)
-        .set('generateWalletError', false);
+      return {
+        ...state,
+        isShowGenerateWallet: true,
+        generateWalletLoading: true,
+        generateWalletError: false,
+      };
     case GENERATE_WALLET_SUCCESS:
-      return state
-        .set('generateWalletLoading', false)
-        .set('seed', action.seed)
-        .set('password', action.password);
+      return {
+        ...state,
+        generateWalletLoading: false,
+        seed: action.seed,
+        password: action.password,
+      };
     case GENERATE_WALLET_ERROR:
-      return state
-        .set('generateWalletLoading', false)
-        .set('generateWalletError', action.error);
+      return {
+        ...state,
+        generateWalletLoading: false,
+        generateWalletError: action.error,
+      };
     case GENERATE_WALLET_CANCEL:
-      return state
-        .set('isShowGenerateWallet', false)
-        .set('generateWalletLoading', true)
-        .set('generateWalletError', false)
-        .set('password', false)
-        .set('seed', false);
+      return {
+        ...state,
+        isShowGenerateWallet: false,
+        generateWalletLoading: true,
+        generateWalletError: false,
+        password: false,
+        seed: false,
+      };
 
     case GENERATE_KEYSTORE:
-      return state
-        .set('isShowGenerateWallet', false)
-        .set('generateKeystoreLoading', true)
-        .set('generateKeystoreError', false);
+      return {
+        ...state,
+        isShowGenerateWallet: false,
+        generateKeystoreLoading: true,
+        generateKeystoreError: false,
+      };
     case GENERATE_KEYSTORE_SUCCESS:
-      return state
-        .set('keystore', action.keystore)
-        .set('seed', false)
-        .set('isComfirmed', true)
-        .set('addressListError', false)
-        .set('addressList', fromJS(action.addressMap))
-        .set('generateKeystoreLoading', false);
+      return {
+        ...state,
+        keystore: action.keystore,
+        seed: false,
+        isComfirmed: true,
+        addressListError: false,
+        addressList: action.addressMap as AddressMap,
+        generateKeystoreLoading: false,
+      };
     case GENERATE_KEYSTORE_ERROR:
-      return state
-        .set('generateKeystoreLoading', false)
-        .set('generateKeystoreError', action.error)
-        .set('isComfirmed', false);
+      return {
+        ...state,
+        generateKeystoreLoading: false,
+        generateKeystoreError: action.error,
+        isComfirmed: false,
+      };
 
     case SHOW_RESTORE_WALLET:
-      return state
-        .set('isShowRestoreWallet', true)
-        .set('seed', false)
-        .set('userSeed', '');
+      return {
+        ...state,
+        isShowRestoreWallet: true,
+        seed: false,
+        userSeed: '',
+      };
     case RESTORE_WALLET_CANCEL:
-      return state
-        .set('isShowRestoreWallet', false)
-        .set('userPassword', '')
-        .set('userSeed', '')
-        .set('restoreWalletError', false);
+      return {
+        ...state,
+        isShowRestoreWallet: false,
+        userPassword: '',
+        userSeed: '',
+        restoreWalletError: false,
+      };
     case CHANGE_USER_SEED:
-      return state
-        .set('userSeed', action.userSeed); // Delete prefixed space from user seed
+      return {
+        ...state,
+        userSeed: action.userSeed as string, // Delete prefixed space from user seed
+      };
     case CHANGE_USER_PASSWORD:
-      return state
-        .set('userPassword', action.password);
+      return {
+        ...state,
+        userPassword: action.password as string,
+      };
     case RESTORE_WALLET_FROM_SEED:
-      return state
-        .set('restoreWalletError', false)
-        .set('isComfirmed', false);
+      return {
+        ...state,
+        restoreWalletError: false,
+        isComfirmed: false,
+      };
     case RESTORE_WALLET_FROM_SEED_ERROR:
-      return state
-        .set('restoreWalletError', action.error);
+      return {
+        ...state,
+        restoreWalletError: action.error,
+      };
     case RESTORE_WALLET_FROM_SEED_SUCCESS:
-      return state
-        .set('isShowRestoreWallet', false)
-        .set('seed', action.userSeed)
-        .set('password', action.userPassword)
-        .set('userSeed', '')
-        .set('userPassword', '');
+      return {
+        ...state,
+        isShowRestoreWallet: false,
+        seed: action.userSeed,
+        password: action.userPassword,
+        userSeed: '',
+        userPassword: '',
+      };
 
 
-    case CHANGE_BALANCE:
-      return state
-        .setIn(['addressList', action.address, action.symbol, 'balance'], action.balance);
+    case CHANGE_BALANCE: {
+      const address = action.address as string;
+      const symbol = action.symbol as string;
+      const prevAddressList = state.addressList || {};
+      const prevTokenMap = prevAddressList[address] || {};
+      // SAFETY: plain-object counterpart of the old
+      // setIn([address, symbol, 'balance']) — assumes the token entry is a
+      // plain object, exactly as the Immutable setIn assumed a Map.
+      const prevTokenEntry = (prevTokenMap[symbol] || {}) as TokenEntry;
+      return {
+        ...state,
+        addressList: {
+          ...prevAddressList,
+          [address]: {
+            ...prevTokenMap,
+            [symbol]: { ...prevTokenEntry, balance: action.balance },
+          },
+        },
+      };
+    }
 
     case SHOW_SEND_TOKEN:
-      return state
-        .set('isShowSendToken', true);
+      return {
+        ...state,
+        isShowSendToken: true,
+      };
     case HIDE_SEND_TOKEN:
-      return state
-        .set('isShowSendToken', false);
+      return {
+        ...state,
+        isShowSendToken: false,
+      };
 
     case SHOW_TOKEN_CHOOSER:
-      return state
-        .set('isShowTokenChooser', true);
+      return {
+        ...state,
+        isShowTokenChooser: true,
+      };
     case HIDE_TOKEN_CHOOSER:
-      return state
-        .set('isShowTokenChooser', false);
+      return {
+        ...state,
+        isShowTokenChooser: false,
+      };
 
     case UPDATE_TOKEN_INFO:
-      return state
-        .set('isShowTokenChooser', false)
-        .set('addressListError', false)
-        .set('tokenInfo', fromJS(action.tokenInfo))
-        .set('addressList', fromJS(action.addressMap));
+      return {
+        ...state,
+        isShowTokenChooser: false,
+        addressListError: false,
+        tokenInfo: action.tokenInfo as Record<string, TokenInfo>,
+        addressList: action.addressMap as AddressMap,
+      };
 
     case GENERATE_ADDRESS:
-      return state
-        .set('addressListLoading', true)
-        .set('addressListError', false)
-        .set('addressListMsg', false);
-    case GENERATE_ADDRESS_SUCCESS:
-      return state
-        .set('addressListLoading', false)
-        .set('addressListError', false)
-        .set('addressListMsg', 'New address generated succesfully')
-        .setIn(['addressList', action.newAddress], fromJS(action.tokenMap));
+      return {
+        ...state,
+        addressListLoading: true,
+        addressListError: false,
+        addressListMsg: false,
+      };
+    case GENERATE_ADDRESS_SUCCESS: {
+      const prevAddressList = state.addressList || {};
+      return {
+        ...state,
+        addressListLoading: false,
+        addressListError: false,
+        addressListMsg: 'New address generated succesfully',
+        addressList: {
+          ...prevAddressList,
+          [action.newAddress as string]: action.tokenMap as TokenMap,
+        },
+      };
+    }
     case GENERATE_ADDRESS_ERROR:
-      return state
-        .set('addressListLoading', false)
-        .set('addressListError', action.error);
+      return {
+        ...state,
+        addressListLoading: false,
+        addressListError: action.error,
+      };
 
 
     case LOCK_WALLET:
-      return state
-        .set('password', false);
+      return {
+        ...state,
+        password: false,
+      };
     case UNLOCK_WALLET:
       return state;
     case UNLOCK_WALLET_SUCCESS:
-      return state
-        .set('password', action.password);
+      return {
+        ...state,
+        password: action.password,
+      };
     case UNLOCK_WALLET_ERROR:
       return state;
 
 
     case SET_EXCHANGE_RATES:
-      return state
-        .set('exchangeRates', fromJS(action.rates));
+      return {
+        ...state,
+        exchangeRates: action.rates as ExchangeRates,
+      };
     case SELECT_CURRENCY:
-      return state
-        .set('convertTo', fromJS(action.convertTo));
+      return {
+        ...state,
+        convertTo: action.convertTo,
+      };
 
     case CLOSE_WALLET:
       return initialState;
 
     case CHECK_LOCAL_STORAGE:
-      return state
-        .set('checkLocalStorageLoading', true);
+      return {
+        ...state,
+        checkLocalStorageLoading: true,
+      };
     case LOCAL_STORAGE_EXIST:
-      return state
-        .set('checkLocalStorageLoading', false)
-        .set('isLocalStorageWallet', true);
+      return {
+        ...state,
+        checkLocalStorageLoading: false,
+        isLocalStorageWallet: true,
+      };
     case LOCAL_STORAGE_NOT_EXIST:
-      return state
-        .set('checkLocalStorageLoading', false)
-        .set('isLocalStorageWallet', false);
+      return {
+        ...state,
+        checkLocalStorageLoading: false,
+        isLocalStorageWallet: false,
+      };
 
     case SAVE_WALLET:
-      return state
-        .set('saveWalletLoading', true)
-        .set('saveWalletError', false);
+      return {
+        ...state,
+        saveWalletLoading: true,
+        saveWalletError: false,
+      };
     case SAVE_WALLET_SUCCESS:
-      return state
-        .set('saveWalletLoading', false);
+      return {
+        ...state,
+        saveWalletLoading: false,
+      };
     case SAVE_WALLET_ERROR:
-      return state
-        .set('saveWalletLoading', false)
-        .set('saveWalletError', action.error);
+      return {
+        ...state,
+        saveWalletLoading: false,
+        saveWalletError: action.error,
+      };
 
     case LOAD_WALLET:
-      return state
-        .set('loadWalletLoading', true)
-        .set('loadWalletError', false);
+      return {
+        ...state,
+        loadWalletLoading: true,
+        loadWalletError: false,
+      };
     case LOAD_WALLET_SUCCESS:
-      return state
-        .set('loadWalletLoading', false);
+      return {
+        ...state,
+        loadWalletLoading: false,
+      };
     case LOAD_WALLET_ERROR:
-      return state
-        .set('loadWalletLoading', false)
-        .set('loadWalletError', action.error);
+      return {
+        ...state,
+        loadWalletLoading: false,
+        loadWalletError: action.error,
+      };
 
     default:
       return state;
@@ -330,4 +494,4 @@ function homeReducer(state = initialState, action: HomeAction) {
   UNLOCK_WALLET_ERROR,
 */
 
-export default homeReducer;
+export default homeReducer as Reducer<HomeState, HomeAction>;

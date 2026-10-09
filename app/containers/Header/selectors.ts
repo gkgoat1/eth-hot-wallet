@@ -1,105 +1,111 @@
 import { createSelector } from 'reselect';
 import Network from './network';
+import type { HeaderState } from './reducer';
 
-type ImmutableState = { get: (k: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+type RootState = { header: HeaderState };
+
 /**
  * Direct selector to the header state domain
  */
-const selectHeaderDomain = (state: ImmutableState) => state.get('header');
+const selectHeaderDomain = (state: RootState) => state.header;
 
 const makeSelectLoading = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate.get('loading')
+  (substate) => substate.loading
 );
 
 const makeSelectError = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate.get('error')
+  (substate) => substate.error
 );
 
 const makeSelectNetworkName = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate.get('networkName')
+  (substate) => substate.networkName
 );
 const makeSelectPrevNetworkName = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate.get('prevNetworkName')
+  (substate) => substate.prevNetworkName
 );
 const makeSelectTxExplorer = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? Network[substate.get('networkName')].tx_explorer : null
+  (substate) => substate ? Network[substate.networkName].tx_explorer : null
 );
 const makeSelectAvailableNetworks = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate.get('availableNetworks')
+  (substate) => substate.availableNetworks
 );
 
 const makeSelectBlockNumber = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate.get('blockNumber')
+  (substate) => substate.blockNumber
 );
 
 /* Will return null if header didn't loaded yet (initial load) */
 const makeSelectNetworkReady = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('networkReady') : null
+  (substate) => substate ? substate.networkReady : null
 );
 
 const makeSelectCheckingBalanceDoneTime = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('checkingBalanceDoneTime') : null
+  (substate) => substate ? substate.checkingBalanceDoneTime : null
 );
 
 const makeSelectCheckingBalances = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('checkingBalances') : null
+  (substate) => substate ? substate.checkingBalances : null
 );
 
 const makeSelectCheckingBalancesError = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('checkingBalancesError') : null
+  (substate) => substate ? substate.checkingBalancesError : null
 );
 
 const makeSelectGetExchangeRatesDoneTime = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('getExchangeRatesDoneTime') : null
+  (substate) => substate ? substate.getExchangeRatesDoneTime : null
 );
 
 const makeSelectGetExchangeRatesLoading = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('getExchangeRatesLoading') : null
+  (substate) => substate ? substate.getExchangeRatesLoading : null
 );
 
 const makeSelectGetExchangeRatesError = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('getExchangeRatesError') : null
+  (substate) => substate ? substate.getExchangeRatesError : null
 );
 
 // faucet
 const makeSelectUsedFaucet = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('usedFaucet') : null
+  (substate) => substate ? substate.usedFaucet : null
 );
 
+// The checkFaucet*/askFaucet* keys are not part of HeaderState (never written
+// by the reducer); reading them previously returned undefined from the
+// Immutable.Map, and now returns undefined from the plain object.
+// SAFETY: keys absent from HeaderState (read via unknown cast), preserved for API compatibility.
 const makeSelectCheckFaucetLoading = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('checkFaucetLoading') : null
+  (substate) => substate ? (substate as unknown as Record<string, unknown>).checkFaucetLoading : null
 );
 const makeSelectCheckFaucetSuccess = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('checkFaucetSuccess') : null
+  (substate) => substate ? (substate as unknown as Record<string, unknown>).checkFaucetSuccess : null
 );
 const makeSelectAskFaucetLoading = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('askFaucetLoading') : null
+  (substate) => substate ? (substate as unknown as Record<string, unknown>).askFaucetLoading : null
 );
 const makeSelectAskFaucetSuccess = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('askFaucetSuccess') : null
+  (substate) => substate ? (substate as unknown as Record<string, unknown>).askFaucetSuccess : null
 );
 const makeSelectAskFaucetError = () => createSelector(
   selectHeaderDomain,
-  (substate) => substate ? substate.get('askFaucetError') : null
+  (substate) => substate ? (substate as unknown as Record<string, unknown>).askFaucetError : null
 );
 
 // export default makeSelectHeader;

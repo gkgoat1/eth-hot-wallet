@@ -446,7 +446,9 @@ export function* checkFaucetApi(): Generator {
  */
 export function* askFaucetApi(): Generator {
   const addressList = yield select(makeSelectAddressList());
-  const askAddress = addressList.keySeq().toArray()[0];
+  // addressList is a plain object (address -> token map); Object.keys preserves
+  // insertion order, matching the old Immutable keySeq().toArray() order.
+  const askAddress = Object.keys(addressList)[0];
   const requestURL = `${askFaucetAddress}?address=${askAddress}`;
   // console.log(`requestURL: ${requestURL}`);
   try {

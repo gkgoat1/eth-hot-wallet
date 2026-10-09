@@ -3,7 +3,6 @@
  * SendToken reducer
  *
  */
-import { fromJS } from 'immutable';
 import {
   CHANGE_FROM,
   CHANGE_AMOUNT,
@@ -34,7 +33,24 @@ interface SendTokenAction {
   tx?: string | boolean;
 }
 
-const initialState = fromJS({
+export interface SendTokenState {
+  from: string;
+  to: string;
+  amount: number;
+  gasPrice: number | string; // gwei
+  locked: boolean;
+  sendTokenSymbol: string;
+
+  comfirmationLoading: boolean;
+  confirmationError: string | boolean | object;
+  confirmationMsg: string | false;
+
+  sendInProgress: boolean;
+  sendError: string | boolean | object;
+  sendTx: string | boolean;
+}
+
+const initialState: SendTokenState = {
   from: '',
   to: '',
   amount: 0,
@@ -50,65 +66,94 @@ const initialState = fromJS({
   sendError: false,
   sendTx: false,
 
-});
+};
 
-function sendTokenReducer(state = initialState, action: SendTokenAction) {
+function sendTokenReducer(state: SendTokenState = initialState, action: SendTokenAction): SendTokenState {
   switch (action.type) {
     case CHANGE_FROM:
       // update values only if provided:
-      return state
-        .update('from', (fromValue: string) => action.address || fromValue)
-        .update('sendTokenSymbol', (sendTokenSymbolValue: string) => action.sendTokenSymbol || sendTokenSymbolValue);
+      return {
+        ...state,
+        from: action.address || state.from,
+        sendTokenSymbol: action.sendTokenSymbol || state.sendTokenSymbol,
+      };
     case CHANGE_AMOUNT:
-      return state
-        .set('amount', action.amount);
+      return {
+        ...state,
+        // SAFETY: action.amount is always set by changeAmount() in actions.ts
+        amount: action.amount as number,
+      };
 
     case CHANGE_TO:
-      return state
-        .set('to', action.address);
+      return {
+        ...state,
+        // SAFETY: action.address is always set by changeTo() in actions.ts
+        to: action.address as string,
+      };
 
     case CHANGE_GAS_PRICE:
-      return state
-        .set('gasPrice', action.gasPrice);
+      return {
+        ...state,
+        // SAFETY: action.gasPrice is always set by changeGasPrice() in actions.ts
+        gasPrice: action.gasPrice as number | string,
+      };
 
     case COMFIRM_SEND_TRANSACTION:
-      return state
-        .set('comfirmationLoading', true)
-        .set('locked', true);
+      return {
+        ...state,
+        comfirmationLoading: true,
+        locked: true,
+      };
     case COMFIRM_SEND_TRANSACTION_SUCCESS:
-      return state
-        .set('comfirmationLoading', false)
-        .set('confirmationMsg', action.msg)
-        .set('confirmationError', false);
+      return {
+        ...state,
+        comfirmationLoading: false,
+        // SAFETY: action.msg is always set by comfirmSendTransactionSuccess() in actions.ts
+        confirmationMsg: action.msg as string,
+        confirmationError: false,
+      };
     case COMFIRM_SEND_TRANSACTION_ERROR:
-      return state
-        .set('comfirmationLoading', false)
-        .set('confirmationError', action.error)
-        .set('locked', false);
+      return {
+        ...state,
+        comfirmationLoading: false,
+        // SAFETY: action.error is always set by comfirmSendTransactionError() in actions.ts
+        confirmationError: action.error as string | boolean | object,
+        locked: false,
+      };
     case ABORT_TRANSACTION:
-      return state
-        .set('comfirmationLoading', false)
-        .set('confirmationMsg', false)
-        .set('confirmationError', false)
-        .set('locked', false)
-        .set('sendError', false)
-        .set('sendTx', false);
+      return {
+        ...state,
+        comfirmationLoading: false,
+        confirmationMsg: false,
+        confirmationError: false,
+        locked: false,
+        sendError: false,
+        sendTx: false,
+      };
 
     case SEND_TRANSACTION:
-      return state
-        .set('sendInProgress', true)
-        .set('sendError', false)
-        .set('sendTx', false);
+      return {
+        ...state,
+        sendInProgress: true,
+        sendError: false,
+        sendTx: false,
+      };
     case SEND_TRANSACTION_SUCCESS:
-      return state
-        .set('sendInProgress', false)
-        .set('sendError', false)
-        .set('sendTx', action.tx);
+      return {
+        ...state,
+        sendInProgress: false,
+        sendError: false,
+        // SAFETY: action.tx is always set by sendTransactionSuccess() in actions.ts
+        sendTx: action.tx as string | boolean,
+      };
     case SEND_TRANSACTION_ERROR:
-      return state
-        .set('sendInProgress', false)
-        .set('sendError', action.error)
-        .set('sendTx', false);
+      return {
+        ...state,
+        sendInProgress: false,
+        // SAFETY: action.error is always set by sendTransactionError() in actions.ts
+        sendError: action.error as string | boolean | object,
+        sendTx: false,
+      };
 
     default:
       return state;

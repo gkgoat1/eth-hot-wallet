@@ -4,7 +4,6 @@
  *
  */
 
-import { fromJS } from 'immutable';
 import { CLOSE_WALLET } from 'containers/HomePage/constants';
 import { defaultNetwork } from 'utils/constants';
 import {
@@ -28,8 +27,28 @@ import {
 
 import Network from './network';
 
+export interface HeaderState {
+  loading: boolean;
+  error: unknown;
+  networkReady: boolean; // true only if network initialized and valid keystore attached
+  prevNetworkName: string;
+  networkName: string;
+  blockNumber: number | bigint;
+  availableNetworks: string[];
+
+  checkingBalanceDoneTime: false | string; // should update after every succesfull balance check
+  checkingBalances: boolean; // Loading
+  checkingBalancesError: unknown;
+
+  getExchangeRatesDoneTime: false | string; // should update after every succesfull exchange rate check
+  getExchangeRatesLoading: boolean;
+  getExchangeRatesError: unknown;
+
+  usedFaucet: boolean; // to prevent offer more then once
+}
+
 // The initial state of the App
-const initialState = fromJS({
+const initialState: HeaderState = {
   loading: false,
   error: false,
   networkReady: false, // true only if network initialized and valid keystore attached
@@ -47,7 +66,7 @@ const initialState = fromJS({
   getExchangeRatesError: false,
 
   usedFaucet: false, // to prevent offer more then once
-});
+};
 
 interface HeaderAction {
   type: string;
@@ -57,68 +76,94 @@ interface HeaderAction {
   timeString?: string;
 }
 
-function headerReducer(state = initialState, action: HeaderAction) {
+function headerReducer(state: HeaderState = initialState, action: HeaderAction): HeaderState {
   switch (action.type) {
     case LOAD_NETWORK:
-      return state
-        .set('loading', true)
-        .set('error', false)
+      return {
+        ...state,
+        loading: true,
+        error: false,
         // dont change prevNetworkName when going online
-        .set('prevNetworkName', (state.get('networkName') === 'Offline') ? state.get('prevNetworkName') : state.get('networkName'))
-        .set('networkName', action.networkName);
+        prevNetworkName: (state.networkName === 'Offline') ? state.prevNetworkName : state.networkName,
+        // SAFETY: action.networkName is always set by loadNetwork() in actions.ts
+        networkName: action.networkName as string,
+      };
     case LOAD_NETWORK_SUCCESS:
-      return state
-        .set('loading', false)
-        .set('error', false)
-        .set('blockNumber', action.blockNumber)
-        .set('networkReady', true);
+      return {
+        ...state,
+        loading: false,
+        error: false,
+        // SAFETY: action.blockNumber is always set by loadNetworkSuccess() in actions.ts
+        blockNumber: action.blockNumber as number | bigint,
+        networkReady: true,
+      };
     case LOAD_NETWORK_ERROR:
-      return state
-        .set('loading', false)
-        .set('error', action.error)
-        .set('networkReady', false);
+      return {
+        ...state,
+        loading: false,
+        error: action.error,
+        networkReady: false,
+      };
 
     case CHECK_BALANCES:
-      return state
-        .set('checkingBalances', true)
-        .set('checkingBalancesError', false)
-        .set('checkingBalanceDoneTime', false);
+      return {
+        ...state,
+        checkingBalances: true,
+        checkingBalancesError: false,
+        checkingBalanceDoneTime: false,
+      };
     case CHECK_BALANCES_SUCCESS:
-      return state
-        .set('checkingBalances', false)
-        .set('checkingBalancesError', false)
-        .set('checkingBalanceDoneTime', action.timeString);
+      return {
+        ...state,
+        checkingBalances: false,
+        checkingBalancesError: false,
+        // SAFETY: action.timeString is always set by checkBalancesSuccess() in actions.ts
+        checkingBalanceDoneTime: action.timeString as string,
+      };
     case CHECK_BALANCES_ERROR:
-      return state
-        .set('checkingBalances', false)
-        .set('checkingBalancesError', action.error)
-        .set('checkingBalanceDoneTime', false);
+      return {
+        ...state,
+        checkingBalances: false,
+        checkingBalancesError: action.error,
+        checkingBalanceDoneTime: false,
+      };
 
     case GET_EXCHANGE_RATES:
-      return state
-        .set('getExchangeRatesLoading', true)
-        .set('getExchangeRatesError', false)
-        .set('getExchangeRatesDoneTime', false);
+      return {
+        ...state,
+        getExchangeRatesLoading: true,
+        getExchangeRatesError: false,
+        getExchangeRatesDoneTime: false,
+      };
     case GET_EXCHANGE_RATES_SUCCESS:
-      return state
-        .set('getExchangeRatesLoading', false)
-        .set('getExchangeRatesError', false)
-        .set('getExchangeRatesDoneTime', action.timeString);
+      return {
+        ...state,
+        getExchangeRatesLoading: false,
+        getExchangeRatesError: false,
+        // SAFETY: action.timeString is always set by getExchangeRatesSuccess() in actions.ts
+        getExchangeRatesDoneTime: action.timeString as string,
+      };
     case GET_EXCHANGE_RATES_ERROR:
-      return state
-        .set('getExchangeRatesLoading', false)
-        .set('getExchangeRatesError', action.error)
-        .set('getExchangeRatesDoneTime', false);
+      return {
+        ...state,
+        getExchangeRatesLoading: false,
+        getExchangeRatesError: action.error,
+        getExchangeRatesDoneTime: false,
+      };
 
     case ASK_FAUCET_SUCCESS:
-      return state
-        .set('usedFaucet', true);
+      return {
+        ...state,
+        usedFaucet: true,
+      };
     case ASK_FAUCET_ERROR:
       return state;
 
     case CLOSE_WALLET:
-      return state
-        .set('usedFaucet', false);
+      return {
+        ...state,
+        usedFaucet: false,
+      };
 
     default:
       return state;

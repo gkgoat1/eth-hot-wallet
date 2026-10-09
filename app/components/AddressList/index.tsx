@@ -12,19 +12,19 @@ import AddressItem from 'components/AddressItem';
 // import messages from './messages';
 
 interface AddressListProps {
-  addressList?: any; // immutable Map of address -> data, or false
+  addressList?: Record<string, any> | false; // plain object: address -> token data, or false
   onChangeFrom: (address: string) => void;
-  exchangeRates?: any; // immutable Map
+  exchangeRates?: Record<string, any>; // plain object: pair -> rate info
   convertTo?: string | boolean;
 }
 
 function AddressList({ addressList, onChangeFrom, exchangeRates, convertTo }: AddressListProps) {
   let mainList = null;
-  // console.log(addressList.toJS().map(([address, data]) => (data)));
-  // const listObject = addressList.toJS();
   if (addressList) {
-    // addressList is an Immutable.Map of address string -> token data map.
-    mainList = addressList.entrySeq().map(([address, data]: [string, any]) => (
+    // addressList is a plain object of address string -> token data map.
+    // Object.entries preserves insertion order (keys are 0x... addresses, never
+    // integer-like), matching the old Immutable entrySeq() order.
+    mainList = Object.entries(addressList).map(([address, data]) => (
       // if (key ==='lastIndex') return null;
       <AddressItem
         key={`item-${address}`}

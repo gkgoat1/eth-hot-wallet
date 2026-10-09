@@ -2,9 +2,8 @@
  *
  * TokenChooser reducer
  *
+ * Phase 6 immutable-removal: state is a plain JS object.
  */
-
-import { fromJS } from 'immutable';
 import {
   TOGGLE_TOKEN,
 } from './constants';
@@ -16,16 +15,32 @@ interface TokenChooserAction {
   toggle?: boolean;
 }
 
-const initialState = fromJS({
+export interface TokenChooserState {
+  chosenTokens: Record<string, boolean>;
+}
+
+const initialState: TokenChooserState = {
 
   chosenTokens: { mero: true },
 
-});
+};
 
-function tokenChooserReducer(state = initialState, action: TokenChooserAction) {
+function tokenChooserReducer(
+  state = initialState,
+  action: TokenChooserAction,
+): TokenChooserState {
   switch (action.type) {
     case TOGGLE_TOKEN:
-      return state.setIn(['chosenTokens', action.symbol], action.toggle);
+      return {
+        ...state,
+        chosenTokens: {
+          ...state.chosenTokens,
+          // SAFETY: TOGGLE_TOKEN actions always carry symbol/toggle
+          // (see ./actions toggleToken); the optional fields exist only to
+          // type arbitrary unrelated actions reaching this reducer.
+          [action.symbol as string]: action.toggle as boolean,
+        },
+      };
     default:
       return state;
   }

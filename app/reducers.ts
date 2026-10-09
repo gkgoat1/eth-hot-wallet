@@ -1,53 +1,45 @@
 /**
  * Combine all reducers in this file and export the combined reducers.
+ *
+ * Phase 6 immutable-removal: redux-immutable's combineReducers and
+ * react-router-redux's LOCATION_CHANGE/routeReducer are dropped. The state
+ * tree is now plain JS objects combined by redux's combineReducers, and
+ * React Router v6 owns routing (no 'route' state key).
  */
-// SAFETY: redux-immutable@4 bundles no type declarations. The import below
-// is the runtime value (an `any` module under strict mode); the explicit
-// `combineReducers` binding right after re-types it at the boundary. Its API
-// mirrors redux's combineReducers but over an Immutable state tree.
-// @ts-expect-error TS7016: redux-immutable ships no type declarations
-import { combineReducers as combineReducersUntyped } from 'redux-immutable';
-import { fromJS } from 'immutable';
-// SAFETY: react-router-redux@5.0.0-alpha.9 bundles no type declarations, so
-// TS7016 is suppressed on the import; LOCATION_CHANGE is the string action
-// type constant it exports, and is typed explicitly at the binding below.
-// @ts-expect-error TS7016: react-router-redux ships no type declarations
-import { LOCATION_CHANGE as LOCATION_CHANGE_UNTYPED } from 'react-router-redux';
+import { combineReducers } from 'redux';
 
-import languageProviderReducer from 'containers/LanguageProvider/reducer';
+import languageProviderReducer, {
+  type LanguageProviderState,
+} from 'containers/LanguageProvider/reducer';
 
+/**
+ * Loose reducer type used for injected reducers. SAFETY: the explicit
+ * `unknown, unknown` signature makes dynamically injected reducers assignable
+ * regardless of their concrete state/action types; redux dispatch is
+ * dynamically typed at runtime anyway. Consumers (utils/reducerInjectors.ts)
+ * cast the combined reducer back to this same loose type.
+ */
 type Reducer = (state: unknown, action: unknown) => unknown;
 
-// Explicitly typed bindings over the untyped module imports above.
-const combineReducers: (reducers: Record<string, Reducer>) => Reducer = combineReducersUntyped;
-const LOCATION_CHANGE: string = LOCATION_CHANGE_UNTYPED;
-
-// Initial routing state
-const routeInitialState = fromJS({
-  location: null,
-});
-
 /**
- * Merge route into the global application state
+ * Creates the main reducer with the dynamically injected ones.
  */
-function routeReducer(state = routeInitialState, action: { type: string; payload?: unknown }) {
-  switch (action.type) {
-    case LOCATION_CHANGE:
-      return state.merge({
-        location: action.payload,
-      });
-    default:
-      return state;
-  }
-}
-
-/**
- * Creates the main reducer with the dynamically injected ones
- */
-export default function createReducer(injectedReducers?: Record<string, Reducer>) {
-  return combineReducers({
-    route: routeReducer,
+export default function createReducer(injectedReducers?: Record<string, Reducer>): Reducer {
+  // SAFETY: redux's combineReducers<S, A> computes S from the reducer map,
+  // which is unrepresentable for the loose injected-reducer map; the store
+  // treats the result as the loose `Reducer` type above.
+  const combined = combineReducers({
     language: languageProviderReducer,
     ...injectedReducers,
   } as never);
+  return combined as unknown as Reducer;
+}
+
+/**
+ * The plain-object shape of the root state slice this module knows about.
+ * Additional keys arrive via reducer injection at runtime.
+ */
+export interface RootState {
+  language: LanguageProviderState;
+  [key: string]: unknown;
 }

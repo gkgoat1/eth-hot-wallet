@@ -4,90 +4,97 @@
 
 import { createSelector } from 'reselect';
 
-// The redux state tree is an Immutable.Map; home state values are dynamic
-// (fromJS), so getters stay loosely typed.
-type ImmutableState = {
-  get: (key: string) => any;
-  getIn: (path: string[]) => any;
-};
+import type {
+  HomeState,
+  AddressMap,
+  TokenMap,
+  TokenInfo,
+  ExchangeRates,
+} from './reducer';
 
-const selectHome = (state: { get: (key: string) => ImmutableState }) => state.get('home');
+// The redux state tree is plain JS; the 'home' domain is injected dynamically
+// by injectReducer, so it may be undefined before injection.
+interface RootState {
+  home?: HomeState;
+}
+
+const selectHome = (state: RootState) => state.home;
 
 
 const makeSelectIsShowGenerateWallet = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('isShowGenerateWallet')
+  (homeState) => homeState?.isShowGenerateWallet
 );
 
 const makeSelectGenerateWalletLoading = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('generateWalletLoading')
+  (homeState) => homeState?.generateWalletLoading
 );
 
 const makeSelectGenerateWalletError = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('generateWalletError')
+  (homeState) => homeState?.generateWalletError
 );
 
 
 const makeSelectGenerateKeystoreLoading = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('generateKeystoreLoading')
+  (homeState) => homeState?.generateKeystoreLoading
 );
 
 const makeSelectGenerateKeystoreError = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('generateKeystoreError')
+  (homeState) => homeState?.generateKeystoreError
 );
 
 const makeSelectRestoreWalletError = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('restoreWalletError')
+  (homeState) => homeState?.restoreWalletError
 );
 
 const makeSelectSeed = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('seed')
+  (homeState) => homeState?.seed
 );
 
 const makeSelectPassword = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('password')
+  (homeState) => homeState?.password
 );
 
 const makeSelectIsComfirmed = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('isComfirmed')
+  (homeState) => homeState?.isComfirmed
 );
 
 
 const makeSelectKeystore = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('keystore')
+  (homeState) => homeState?.keystore
 );
 
 const makeSelectShowRestoreWallet = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('isShowRestoreWallet')
+  (homeState) => homeState?.isShowRestoreWallet
 );
 
 const makeSelectUserSeed = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('userSeed')
+  (homeState) => homeState?.userSeed
 );
 const makeSelectUserPassword = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('userPassword')
+  (homeState) => homeState?.userPassword
 );
 
 const makeSelectIsShowSendToken = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('isShowSendToken')
+  (homeState) => homeState?.isShowSendToken
 );
 
 const makeSelectIsShowTokenChooser = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('isShowTokenChooser')
+  (homeState) => homeState?.isShowTokenChooser
 );
 
 /*
@@ -96,7 +103,7 @@ const makeSelectIsShowTokenChooser = () => createSelector(
 */
 const makeSelectAddressList = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('addressList')
+  (homeState) => homeState?.addressList
 );
 
 /**
@@ -125,44 +132,51 @@ interface AddressMapOptions {
 
 const makeSelectAddressMap = (address?: string | false, options: AddressMapOptions = {}) => createSelector(
   selectHome,
-  (homeState) => {
+  (homeState): TokenMap | AddressMap | string[] | null => {
     const { returnList, removeIndex, removeEth } = options;
-    let addressMap = address ? homeState.getIn(['addressList', address]) : homeState.get('addressList');
+    const addressList = homeState?.addressList;
+    const addressMap = address ? (addressList ? addressList[address] : undefined) : addressList;
     if (!addressMap) {
       return null;
     }
-    if (address && removeIndex) {
-      addressMap = addressMap.delete('index');
+    let result = addressMap;
+    if (address && (removeIndex || removeEth)) {
+      // Single-address branch: addressMap is a TokenMap; copy before omitting
+      // keys, matching the old Immutable .delete() semantics.
+      const tokenMap: TokenMap = { ...(addressMap as TokenMap) };
+      if (removeIndex) {
+        delete tokenMap.index;
+      }
+      if (removeEth) {
+        delete tokenMap.eth;
+      }
+      result = tokenMap;
     }
-    if (address && removeEth) {
-      addressMap = addressMap.delete('eth');
-    }
-    const returnS = (returnList ? addressMap.keySeq().toArray() : addressMap.toJS());
-    return returnS;
+    return returnList ? Object.keys(result) : result;
   }
 );
 
 
 const makeSelectAddressListLoading = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('addressListLoading')
+  (homeState) => homeState?.addressListLoading
 );
 const makeSelectAddressListError = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('addressListError')
+  (homeState) => homeState?.addressListError
 );
 const makeSelectAddressListMsg = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('addressListMsg')
+  (homeState) => homeState?.addressListMsg
 );
 const makeSelectExchangeRates = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('exchangeRates').toJS()
+  (homeState): ExchangeRates | undefined => homeState?.exchangeRates
 );
 
 const makeSelectConvertTo = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('convertTo')
+  (homeState) => homeState?.convertTo
 );
 
 /**
@@ -183,10 +197,10 @@ const makeSelectConvertTo = () => createSelector(
  */
 const makeSelectTokenInfo = (symbol?: string) => createSelector(
   selectHome,
-  (homeState) => {
-    const tokenInfo = symbol ? homeState.getIn(['tokenInfo', symbol]) : homeState.get('tokenInfo');
+  (homeState): TokenInfo | Record<string, TokenInfo> | null => {
+    const tokenInfo = symbol ? homeState?.tokenInfo?.[symbol] : homeState?.tokenInfo;
     if (tokenInfo) {
-      return tokenInfo.toJS();
+      return tokenInfo;
     }
     return null;
   }
@@ -194,7 +208,7 @@ const makeSelectTokenInfo = (symbol?: string) => createSelector(
 /* return array of tokens from tokenInfo : ['eth','eos','ppt'] */
 const makeSelectTokenInfoList = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('tokenInfo').keySeq().toArray()
+  (homeState) => (homeState?.tokenInfo ? Object.keys(homeState.tokenInfo) : undefined)
 );
 
 /**
@@ -209,26 +223,26 @@ const makeSelectTokenInfoList = () => createSelector(
 const makeSelectTokenDecimalsMap = () => createSelector(
   selectHome,
   (homeState) => {
-    const tokenInfo = homeState.get('tokenInfo') ? homeState.get('tokenInfo').toJS() : {};
+    const tokenInfo = homeState?.tokenInfo ? homeState.tokenInfo : {};
     return Object.assign({}, ...Object.keys(tokenInfo).map((k) => ({ [k]: tokenInfo[k].decimals })));
   }
 );
 
 const makeSelectSaveWalletLoading = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('saveWalletLoading')
+  (homeState) => homeState?.saveWalletLoading
 );
 const makeSelectSaveWalletError = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('saveWalletError')
+  (homeState) => homeState?.saveWalletError
 );
 const makeSelectLoadWalletLoading = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('loadWalletLoading')
+  (homeState) => homeState?.loadWalletLoading
 );
 const makeSelectLoadwalletError = () => createSelector(
   selectHome,
-  (homeState) => homeState.get('loadWalletError')
+  (homeState) => homeState?.loadWalletError
 );
 
 export {

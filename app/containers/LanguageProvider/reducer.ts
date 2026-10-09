@@ -2,9 +2,8 @@
  *
  * LanguageProvider reducer
  *
+ * Phase 6 immutable-removal: state is a plain JS object.
  */
-
-import { fromJS } from 'immutable';
 
 import {
   CHANGE_LOCALE,
@@ -13,9 +12,13 @@ import {
   DEFAULT_LOCALE,
 } from '../App/constants'; // eslint-disable-line
 
-const initialState = fromJS({
+export interface LanguageProviderState {
+  locale: string;
+}
+
+const initialState: LanguageProviderState = {
   locale: DEFAULT_LOCALE,
-});
+};
 
 // Loose action shape; matches ChangeLocaleAction in ./actions.
 interface LanguageProviderAction {
@@ -23,11 +26,19 @@ interface LanguageProviderAction {
   locale?: string;
 }
 
-function languageProviderReducer(state = initialState, action: LanguageProviderAction) {
+function languageProviderReducer(
+  state = initialState,
+  action: LanguageProviderAction,
+): LanguageProviderState {
   switch (action.type) {
     case CHANGE_LOCALE:
-      return state
-        .set('locale', action.locale);
+      return {
+        ...state,
+        // SAFETY: CHANGE_LOCALE actions always carry a locale string
+        // (see ./actions changeLocale); the optional field exists only to
+        // type arbitrary unrelated actions reaching this reducer.
+        locale: action.locale as string,
+      };
     default:
       return state;
   }

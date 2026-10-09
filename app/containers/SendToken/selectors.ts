@@ -1,82 +1,82 @@
 
 import { createSelector } from 'reselect';
+import type { SendTokenState } from './reducer';
 
-// The redux state tree is an Immutable.Map; sendtoken state values are
-// dynamic (fromJS), so getters stay loosely typed. Same convention as
-// HomePage/selectors.
-type ImmutableState = {
-  get: (key: string) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+// The redux state tree holds plain JS objects; the sendtoken slice is typed
+// by SendTokenState from ./reducer.
+type RootState = {
+  sendtoken: SendTokenState;
 };
 
 /**
  * Direct selector to the sendToken state domain
  */
-const selectSendTokenDomain = (state: ImmutableState) => state.get('sendtoken');
+const selectSendTokenDomain = (state: RootState) => state.sendtoken;
 
 
 const makeSelectFrom = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('from')
+  (substate) => substate.from
 );
 
 const makeSelectTo = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('to')
+  (substate) => substate.to
 );
 
 const makeSelectAmount = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('amount')
+  (substate) => substate.amount
 );
 
 const makeSelectGasPrice = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('gasPrice')
+  (substate) => substate.gasPrice
 );
 
 const makeSelectSendTokenSymbol = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('sendTokenSymbol')
+  (substate) => substate.sendTokenSymbol
 );
 
 const makeSelectComfirmationLoading = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('comfirmationLoading')
+  (substate) => substate.comfirmationLoading
 );
 
 const makeSelectConfirmationError = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('confirmationError')
+  (substate) => substate.confirmationError
 );
 
 const makeSelectConfirmationMsg = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('confirmationMsg')
+  (substate) => substate.confirmationMsg
 );
 
 const makeSelectSendInProgress = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('sendInProgress')
+  (substate) => substate.sendInProgress
 );
 
 const makeSelectSendError = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('sendError')
+  (substate) => substate.sendError
 );
 
 const makeSelectSendTx = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('sendTx')
+  (substate) => substate.sendTx
 );
 
 const makeSelectLocked = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('locked')
+  (substate) => substate.locked
 );
 
 const makeSelectIsSendComfirmationLocked = () => createSelector(
   selectSendTokenDomain,
-  (substate) => substate.get('sendInProgress') !== false || substate.get('sendTx') !== false
+  (substate) => substate.sendInProgress !== false || substate.sendTx !== false
 );
 
 // export default makeSelectSendToken;

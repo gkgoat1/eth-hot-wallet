@@ -13,7 +13,7 @@ import messages from './messages';
 
 interface CurrencySelectorProps {
   convertTo?: string | boolean;
-  exchangeRates?: any; // immutable Map of pair -> rate info
+  exchangeRates?: Record<string, { name?: string }>; // plain object: pair -> rate info
   onSelectCurrency: (currency: string) => void;
 }
 
@@ -25,10 +25,12 @@ function CurrencySelector({ convertTo, exchangeRates, onSelectCurrency }: Curren
   // without changing it.
   const noSelectionValue = false as unknown as string;
   const options: JSX.Element[] = [];
-  if (exchangeRates.size > 0) {
-    exchangeRates.entrySeq().forEach((entry: [string, any]) => {
-      // console.log(`key: ${entry[0]}, value: ${entry[1]}`);
-      options.push(<option value={entry[0]} key={entry[0]}>{entry[1].get('name')}</option>);
+  // exchangeRates is a plain object; Object.entries preserves insertion order,
+  // matching the old Immutable entrySeq() order.
+  if (exchangeRates && Object.keys(exchangeRates).length > 0) {
+    Object.entries(exchangeRates).forEach(([pair, rateInfo]) => {
+      // console.log(`key: ${pair}, value: ${rateInfo}`);
+      options.push(<option value={pair} key={pair}>{rateInfo.name}</option>);
     });
   }
   /* if (availableNetworks) {
