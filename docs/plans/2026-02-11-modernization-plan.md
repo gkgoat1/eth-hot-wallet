@@ -167,7 +167,12 @@ Phases (each independently mergeable):
 * **Phase 4 — `packages/web3-adapter`.** §5.2.
 * **Phase 5 — App migration to TS + tsdown-managed libs.** §6.
 * **Phase 6 — React 18 / RTK / router / antd upgrades.** §7 (strictly after Phase 5 is green).
-* **Phase 7 — Publish & hardening.** §8.
+* **Phase 7 — Publish & hardening (IN PROGRESS).** §8. Status 2026-02-11: git dep
+`eth-lightwallet-next` switched to published `npm:@gkgo/eth-lightwallet@5.0.0` (golden gate
+10/10 + anvil 5/5 green against the npm artifact). Removed dead `internals/webpack` +
+`internals/generators`. Remaining: publish `@eth-hot-wallet/web3-adapter`, changesets,
+port/delete the 71 legacy jest tests under `app/**/tests/`, drop `immutable`/`redux-immutable`
+devDeps, remove remaining dead `internals/scripts` + legacy package.json scripts.
 
 ## 5. Library work
 
