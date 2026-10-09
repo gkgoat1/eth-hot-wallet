@@ -177,8 +177,10 @@ sagaInjectors 21-case, i18n, LanguageProvider reducer+component, injectReducer/i
 via react-test-renderer@18); the 61 placeholder/commented-out enzyme stubs deleted; `immutable` +
 `redux-immutable` devDeps dropped (zero imports remain). 57 unit tests green (was 23). Missed
 Phase 6 gap found and fixed: `injectReducer.tsx` was still the React 15 contextTypes class HOC —
-rewritten hooks-based. Remaining: publish `@eth-hot-wallet/web3-adapter`, changesets, prune
-remaining dead `internals/scripts` (analyze/clean/setup/extract-intl).
+rewritten hooks-based. web3-adapter renamed to `@gkgo/eth-hot-wallet-web3-adapter@0.1.0` (package name +
+all source/config refs); the entire `internals/` directory deleted (no live refs); package.json
+scripts pruned to the vite/vitest set (`build, start, lint, typecheck, test, test:anvil`).
+Remaining: publish `@gkgo/eth-hot-wallet-web3-adapter` to npm, add changesets.
 
 ## 5. Library work
 
