@@ -33,3 +33,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - ox@0.14.54
   - viem@2.57.4
+  - '@gkgo/eth-lightwallet@5.0.0'
