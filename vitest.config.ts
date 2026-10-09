@@ -15,7 +15,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['test/**/*.test.{ts,js}', 'packages/**/*.test.{ts,tsx}'],
+    include: ['test/**/*.test.{ts,tsx,js}', 'packages/**/*.test.{ts,tsx}'],
     // anvil tests require the foundry toolchain and run in their own job
     // (`pnpm test:anvil`); the default unit-test run excludes them so CI
     // and bare checkouts stay green without foundry installed.

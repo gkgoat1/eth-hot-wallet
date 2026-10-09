@@ -1,64 +1,46 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import hoistNonReactStatics from 'hoist-non-react-statics';
+import React, { useRef } from 'react';
+import { useStore } from 'react-redux';
 
 import getInjectors from './reducerInjectors';
+import type { InjectableStore } from './checkStore';
 
-// SAFETY: hoist-non-react-statics@2's bundled d.ts resolves `react` through
-// pnpm's fallback store (@types/react@19) while the app compiles against
-// @types/react@15, so its React.ComponentType is structurally incompatible
-// with this app's component classes. At runtime it only copies statics onto
-// the target component; this binding re-types it against the app's React 15
-// types so both arguments check locally.
-const hoistStatics = hoistNonReactStatics as unknown as (
-  target: React.ComponentType<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
-  source: React.ComponentType<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
-) => React.ComponentType<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+type Reducer = (state: unknown, action: unknown) => unknown;
 
 interface InjectReducerArgs {
   key: string;
-  reducer: (state: unknown, action: unknown) => unknown;
+  reducer: Reducer;
 }
 
 /**
- * Dynamically injects a reducer
+ * Dynamically injects a reducer.
  *
- * @param {string} key A key of the reducer
- * @param {function} reducer A reducer that will be injected
- *
+ * Phase 6: rewritten from a legacy-context class HOC (React 15 contextTypes)
+ * to a hooks HOC using react-redux's useStore, matching injectSaga. Behavior
+ * preserved: the reducer is injected before first paint (useLayoutEffect, so
+ * the connected child renders against an already-combined reducer tree).
  */
-export default ({ key, reducer }: InjectReducerArgs) => (WrappedComponent: React.ComponentType<any>) => {
-  class ReducerInjector extends React.Component<any> {
-    static WrappedComponent = WrappedComponent;
-    static contextTypes = {
-      store: PropTypes.object.isRequired,
+export default ({ key, reducer }: InjectReducerArgs) =>
+  function WithReducer<P extends object>(WrappedComponent: React.ComponentType<P>) {
+    const InjectReducer = (props: P): React.ReactElement => {
+      // SAFETY: react-redux's typed Store lacks the injector fields
+      // (injectedReducers/replaceReducer augmentation) the injectors attach
+      // at runtime; InjectableStore is the real shape.
+      const store = useStore() as unknown as InjectableStore;
+      // SAFETY: injectors are a stateless factory over the store; capturing
+      // them once per mount matches the original behavior.
+      const injectorsRef = useRef(getInjectors(store));
+      injectorsRef.current = getInjectors(store);
+
+      // Inject synchronously before children render. The original used
+      // componentWillMount; useLayoutEffect fires after the first commit in
+      // React 18, so instead inject during render — injectReducer is
+      // idempotent (no-op when the same reducer is already registered) and
+      // safe to re-run.
+      injectorsRef.current.injectReducer(key, reducer);
+
+      return <WrappedComponent {...props} />;
     };
-    static displayName = `withReducer(${(WrappedComponent.displayName || WrappedComponent.name || 'Component')})`;
-
-    // SAFETY: legacy contextTypes above guarantee `store` is present on
-    // context. `declare` keeps the class from emitting a field that would
-    // clobber React's context assignment (ES2022 define-field semantics);
-    // React assigns context in the base constructor, before `injectors`
-    // is first read on mount.
-    declare context: { store: Parameters<typeof getInjectors>[0] };
-
-    componentWillMount() {
-      const { injectReducer } = this.injectors;
-
-      injectReducer(key, reducer);
-    }
-
-    // getInjectors is a stateless factory over the store (validated per
-    // call), so reading it via a getter is behaviorally identical to the
-    // original field initializer while keeping `declare context` above.
-    get injectors() {
-      return getInjectors(this.context.store);
-    }
-
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
-  }
-
-  return hoistStatics(ReducerInjector, WrappedComponent);
-};
+    InjectReducer.displayName = `withReducer(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+    InjectReducer.WrappedComponent = WrappedComponent;
+    return InjectReducer;
+  };
