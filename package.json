@@ -27,7 +27,7 @@
     "test": "vitest run",
     "test:anvil": "vitest run --config vitest.anvil.config.ts",
     "publish:all": "pnpm -r --include-workspace-root run --if-present build && pnpm -r --include-workspace-root publish --access public --report-summary",
-    "publish:all:dry-run": "pnpm -r --include-workspace-root run --if-present build && pnpm -r --include-workspace-root publish --access public --dry-run",
+    "publish:all:dry-run": "pnpm -r --include-workspace-root run --if-present build && pnpm -r --include-workspace-root publish --access public --dry-run --no-git-checks",
     "release": "pnpm publish:all",
     "release:dry-run": "pnpm publish:all:dry-run"
   },
