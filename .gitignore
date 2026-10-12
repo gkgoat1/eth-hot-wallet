@@ -12,6 +12,7 @@ yarn-error.log
 
 # pnpm
 pnpm-debug.log
+pnpm-publish-summary.json
 
 # package build output
 packages/*/dist/

@@ -26,8 +26,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:anvil": "vitest run --config vitest.anvil.config.ts",
-    "release": "pnpm -r --include-workspace-root run --if-present build && pnpm -r --include-workspace-root publish --access public --report-summary",
-    "release:dry-run": "pnpm -r --include-workspace-root run --if-present build && pnpm -r --include-workspace-root publish --access public --dry-run"
+    "publish:all": "pnpm -r --include-workspace-root run --if-present build && pnpm -r --include-workspace-root publish --access public --report-summary",
+    "publish:all:dry-run": "pnpm -r --include-workspace-root run --if-present build && pnpm -r --include-workspace-root publish --access public --dry-run",
+    "release": "pnpm publish:all",
+    "release:dry-run": "pnpm publish:all:dry-run"
   },
   "packageManager": "pnpm@11.8.0",
   "dependencies": {

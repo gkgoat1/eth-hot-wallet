@@ -140,7 +140,7 @@ Adopt a **pnpm workspace monorepo in this repository**:
 
 ```text
 eth-hot-wallet/
-  package.json                 # workspace root, private
+package.json                 # workspace root, publishable app package
   pnpm-workspace.yaml
   packages/
     web3-adapter/              # viem accounts/transport over keystore (Phase 4)
@@ -180,7 +180,11 @@ Phase 6 gap found and fixed: `injectReducer.tsx` was still the React 15 contextT
 rewritten hooks-based. web3-adapter renamed to `@gkgo/eth-hot-wallet-web3-adapter@0.1.0` (package name +
 all source/config refs); the entire `internals/` directory deleted (no live refs); package.json
 scripts pruned to the vite/vitest set (`build, start, lint, typecheck, test, test:anvil`).
-Remaining: publish `@gkgo/eth-hot-wallet-web3-adapter` to npm, add changesets.
+Root package renamed to `@gkgo/eth-hot-wallet@0.6.0` with public publish metadata;
+`pnpm publish:all` now builds and recursively publishes the root plus all workspace
+packages to `@gkgo` in one command, with `pnpm publish:all:dry-run` for validation.
+Packed manifests verified: workspace dependency rewrites to adapter `0.1.0`.
+Remaining: execute the npm publish from the protected main branch, add changesets.
 
 ## 5. Library work
 
