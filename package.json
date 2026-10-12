@@ -1,10 +1,18 @@
 {
-  "name": "eth-hot-wallet",
+  "name": "@gkgo/eth-hot-wallet",
   "version": "0.6.0",
-  "description": "Ethereum and ERC20 Hot Wallet",
+  "description": "Ethereum and ERC20 Hot Wallet web application",
   "repository": {
     "type": "git",
-    "url": "git://github.com/PaulLaux/eth-hot-wallet.git"
+    "url": "https://github.com/gkgoat1/eth-hot-wallet.git"
+  },
+  "files": [
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=20"
@@ -17,7 +25,9 @@
     "lint": "eslint . --config eslint.config.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "test:anvil": "vitest run --config vitest.anvil.config.ts"
+    "test:anvil": "vitest run --config vitest.anvil.config.ts",
+    "release": "pnpm -r --include-workspace-root run --if-present build && pnpm -r --include-workspace-root publish --access public --report-summary",
+    "release:dry-run": "pnpm -r --include-workspace-root run --if-present build && pnpm -r --include-workspace-root publish --access public --dry-run"
   },
   "packageManager": "pnpm@11.8.0",
   "dependencies": {
